@@ -195,11 +195,21 @@
               </div>
 
               <div class="module-layout">
-                <div id="bugList" class="item-list"></div>
+                <div class="list-column">
+                  <p class="list-title">Open Reports</p>
+                  <div id="bugList" class="item-list"></div>
+                  <p class="list-title list-title-processed">Processed Reports</p>
+                  <div id="bugProcessedList" class="item-list item-list-processed"></div>
+                </div>
                 <aside class="detail-panel" id="bugDetailPanel">
                   <h4 id="bugDetailTitle">Select a bug report</h4>
                   <p class="detail-meta" id="bugDetailMeta"></p>
                   <p id="bugDetailDescription">Choose a report from the list to see full description and details.</p>
+                  <div class="detail-actions" id="bugDetailActions">
+                    <button type="button" class="ghost-btn" id="bugMarkCompleted">Mark as Completed</button>
+                    <button type="button" class="ghost-btn" id="bugMarkIntended">Mark as Intended</button>
+                    <button type="button" class="ghost-btn" id="bugMarkDenied">Mark as Denied</button>
+                  </div>
                 </aside>
               </div>
             </article>
@@ -219,11 +229,21 @@
               </div>
 
               <div class="module-layout">
-                <div id="suggestionList" class="item-list"></div>
+                <div class="list-column">
+                  <p class="list-title">Open Suggestions</p>
+                  <div id="suggestionList" class="item-list"></div>
+                  <p class="list-title list-title-processed">Processed Suggestions</p>
+                  <div id="suggestionProcessedList" class="item-list item-list-processed"></div>
+                </div>
                 <aside class="detail-panel" id="suggestionDetailPanel">
                   <h4 id="suggestionDetailTitle">Select a suggestion</h4>
                   <p class="detail-meta" id="suggestionDetailMeta"></p>
                   <p id="suggestionDetailDescription">Choose a suggestion from the list to see full details.</p>
+                  <div class="detail-actions" id="suggestionDetailActions">
+                    <button type="button" class="ghost-btn" id="suggestionMarkAccepted">Mark as Accepted</button>
+                    <button type="button" class="ghost-btn" id="suggestionMarkPlanned">Mark as Planned</button>
+                    <button type="button" class="ghost-btn" id="suggestionMarkDenied">Mark as Denied</button>
+                  </div>
                 </aside>
               </div>
             </article>
@@ -249,11 +269,21 @@
               </div>
 
               <div class="module-layout">
-                <div id="applicationList" class="item-list"></div>
+                <div class="list-column">
+                  <p class="list-title">Open Applications</p>
+                  <div id="applicationList" class="item-list"></div>
+                  <p class="list-title list-title-processed">Processed Applications</p>
+                  <div id="applicationProcessedList" class="item-list item-list-processed"></div>
+                </div>
                 <aside class="detail-panel" id="applicationDetailPanel">
                   <h4 id="applicationDetailTitle">Select an application</h4>
                   <p class="detail-meta" id="applicationDetailMeta"></p>
                   <p id="applicationDetailDescription">Choose an application from the list to see full details.</p>
+                  <div id="applicationDetailAnswers" class="qa-list"></div>
+                  <div class="detail-actions" id="applicationDetailActions">
+                    <button type="button" class="ghost-btn" id="applicationMarkAccepted">Accept</button>
+                    <button type="button" class="ghost-btn" id="applicationMarkDenied">Deny</button>
+                  </div>
                 </aside>
               </div>
             </article>

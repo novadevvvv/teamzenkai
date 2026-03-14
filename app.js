@@ -29,6 +29,7 @@ const bugReports = [
     title: "Login fails on first attempt",
     priority: "High",
     area: "Auth",
+    resolution: null,
     summary: "Some users must click log in twice after entering credentials.",
     description: "On fresh sessions, the first login submit occasionally returns invalid credentials even when correct values are used. A second attempt succeeds immediately. This appears related to initialization timing between user data load and submit handling.",
   },
@@ -37,6 +38,7 @@ const bugReports = [
     title: "Compensation review step loses chips",
     priority: "Medium",
     area: "Compensation",
+    resolution: null,
     summary: "Review panel does not always reflect selected option labels.",
     description: "When rapidly changing compensation type before hitting next, the review panel can show stale selection values. Reproduced by switching from currency to character and immediately moving to review. Expected behavior is live synchronized values.",
   },
@@ -45,6 +47,7 @@ const bugReports = [
     title: "Sidebar wraps in narrow tablet view",
     priority: "Low",
     area: "Navigation",
+    resolution: null,
     summary: "Navigation labels crowd between 680px and 740px width.",
     description: "At certain viewport widths, sidebar buttons clip text or wrap awkwardly. This impacts readability but does not block interactions. Suggested fix is responsive font scaling and tighter button padding for that range.",
   },
@@ -56,6 +59,12 @@ const applications = [
     title: "Kai R.",
     role: "Operations Analyst",
     status: "Pending Review",
+    decision: null,
+    answers: [
+      { question: "How many years of relevant experience do you have?", answer: "3 years in operations analytics." },
+      { question: "What tools are you strongest with?", answer: "Excel, SQL, and dashboard reporting." },
+      { question: "Why do you want this role?", answer: "I enjoy optimizing workflows and building reliable reports." },
+    ],
     summary: "Strong spreadsheet and reporting background.",
     description: "Kai has 3 years of operational analytics experience, focusing on process metrics and dashboard reporting. Applied for Operations Analyst and included references from two prior team leads.",
   },
@@ -64,6 +73,12 @@ const applications = [
     title: "Mira T.",
     role: "Support Specialist",
     status: "Interview Scheduled",
+    decision: null,
+    answers: [
+      { question: "How do you handle upset users?", answer: "I acknowledge impact first, then provide clear next steps." },
+      { question: "What is your escalation process?", answer: "Triage severity, gather logs, and handoff with full context." },
+      { question: "Preferred shift window?", answer: "Afternoons and evenings." },
+    ],
     summary: "Customer support lead with escalation handling history.",
     description: "Mira has 4 years of support experience and specializes in incident triage and communication workflows. Interview is scheduled for next Tuesday 14:00.",
   },
@@ -72,6 +87,12 @@ const applications = [
     title: "Ren S.",
     role: "Maintenance Tech",
     status: "Approved",
+    decision: null,
+    answers: [
+      { question: "Experience with preventive maintenance?", answer: "Handled weekly and monthly checklists for 2 years." },
+      { question: "Comfort with emergency procedures?", answer: "Certified, and experienced in incident response drills." },
+      { question: "Earliest available start date?", answer: "Within 2 weeks." },
+    ],
     summary: "Approved after technical practical assessment.",
     description: "Ren completed the maintenance assessment with high marks in preventive checks and emergency procedures. Start date pending onboarding confirmation.",
   },
@@ -80,22 +101,25 @@ const applications = [
 const suggestions = [
   {
     id: "sug-1",
+    decision: null,
     title: "Add queue summary widget",
-    area: "Lobby",
+    areas: ["Lobby", "Game"],
     summary: "Show active queue and estimated wait time in lobby header.",
     description: "Introduce a compact widget in the lobby that displays current queue population and estimated wait time. This helps players decide whether to stay in queue or switch modes.",
   },
   {
     id: "sug-2",
+    decision: null,
     title: "Improve combo training prompts",
-    area: "Game",
+    areas: ["Game", "Character"],
     summary: "Provide contextual hint prompts during combo practice sessions.",
     description: "In training sessions, add optional prompts when players repeatedly drop combo sequences. The prompt should identify the missed timing window and suggest a correction.",
   },
   {
     id: "sug-3",
+    decision: null,
     title: "Character loadout presets",
-    area: "Character",
+    areas: ["Character", "Lobby"],
     summary: "Allow saving and loading up to three quick build presets.",
     description: "Users want to switch between PvP and PvE builds quickly. Add character presets with naming support and one-click apply on the character management screen.",
   },
@@ -149,22 +173,34 @@ const els = {
   bugPriorityFilters: document.getElementById("bugPriorityFilters"),
   bugAreaFilters: document.getElementById("bugAreaFilters"),
   bugList: document.getElementById("bugList"),
+  bugProcessedList: document.getElementById("bugProcessedList"),
   bugDetailTitle: document.getElementById("bugDetailTitle"),
   bugDetailMeta: document.getElementById("bugDetailMeta"),
   bugDetailDescription: document.getElementById("bugDetailDescription"),
+  bugMarkCompleted: document.getElementById("bugMarkCompleted"),
+  bugMarkIntended: document.getElementById("bugMarkIntended"),
+  bugMarkDenied: document.getElementById("bugMarkDenied"),
   suggestionSearchInput: document.getElementById("suggestionSearchInput"),
   suggestionAreaFilters: document.getElementById("suggestionAreaFilters"),
   suggestionList: document.getElementById("suggestionList"),
+  suggestionProcessedList: document.getElementById("suggestionProcessedList"),
   suggestionDetailTitle: document.getElementById("suggestionDetailTitle"),
   suggestionDetailMeta: document.getElementById("suggestionDetailMeta"),
   suggestionDetailDescription: document.getElementById("suggestionDetailDescription"),
+  suggestionMarkAccepted: document.getElementById("suggestionMarkAccepted"),
+  suggestionMarkPlanned: document.getElementById("suggestionMarkPlanned"),
+  suggestionMarkDenied: document.getElementById("suggestionMarkDenied"),
   applicationSearchInput: document.getElementById("applicationSearchInput"),
   applicationRoleFilters: document.getElementById("applicationRoleFilters"),
   applicationStatusFilters: document.getElementById("applicationStatusFilters"),
   applicationList: document.getElementById("applicationList"),
+  applicationProcessedList: document.getElementById("applicationProcessedList"),
   applicationDetailTitle: document.getElementById("applicationDetailTitle"),
   applicationDetailMeta: document.getElementById("applicationDetailMeta"),
   applicationDetailDescription: document.getElementById("applicationDetailDescription"),
+  applicationDetailAnswers: document.getElementById("applicationDetailAnswers"),
+  applicationMarkAccepted: document.getElementById("applicationMarkAccepted"),
+  applicationMarkDenied: document.getElementById("applicationMarkDenied"),
 };
 
 function escapeHtml(text) {
@@ -177,6 +213,10 @@ function escapeHtml(text) {
 }
 
 function setSingleChipToggle(container, key, value) {
+  if (!container) {
+    return;
+  }
+
   const buttons = container.querySelectorAll(".chip-toggle");
   buttons.forEach((button) => {
     const matches = button.dataset[key] === value;
@@ -202,12 +242,24 @@ function renderBugDetail(report) {
     els.bugDetailTitle.textContent = "No matching bug reports";
     els.bugDetailMeta.textContent = "Try adjusting search or filter toggles.";
     els.bugDetailDescription.textContent = "";
+    if (els.bugMarkCompleted) {
+      els.bugMarkCompleted.disabled = true;
+      els.bugMarkIntended.disabled = true;
+      els.bugMarkDenied.disabled = true;
+    }
     return;
   }
 
   els.bugDetailTitle.textContent = report.title;
-  els.bugDetailMeta.textContent = `Priority: ${report.priority} | Area: ${report.area}`;
+  const statusText = report.resolution ? ` | Status: ${report.resolution}` : " | Status: Open";
+  els.bugDetailMeta.textContent = `Priority: ${report.priority} | Area: ${report.area}${statusText}`;
   els.bugDetailDescription.textContent = report.description;
+  if (els.bugMarkCompleted) {
+    const isProcessed = Boolean(report.resolution);
+    els.bugMarkCompleted.disabled = isProcessed;
+    els.bugMarkIntended.disabled = isProcessed;
+    els.bugMarkDenied.disabled = isProcessed;
+  }
 }
 
 function renderBugReports() {
@@ -216,8 +268,14 @@ function renderBugReports() {
   }
 
   const filtered = getFilteredBugReports();
-  if (filtered.length === 0) {
+  const openReports = filtered.filter((report) => !report.resolution);
+  const processedReports = filtered.filter((report) => report.resolution);
+
+  if (openReports.length === 0 && processedReports.length === 0) {
     els.bugList.innerHTML = '<div class="empty-state">No bug reports match current filters.</div>';
+    if (els.bugProcessedList) {
+      els.bugProcessedList.innerHTML = '<div class="empty-state">No processed bug reports yet.</div>';
+    }
     renderBugDetail(null);
     return;
   }
@@ -226,7 +284,9 @@ function renderBugReports() {
     state.activeBugId = filtered[0].id;
   }
 
-  els.bugList.innerHTML = filtered
+  els.bugList.innerHTML = openReports.length === 0
+    ? '<div class="empty-state">No open bug reports for this filter.</div>'
+    : openReports
     .map((report) => {
       const isActive = report.id === state.activeBugId;
       return `
@@ -241,6 +301,27 @@ function renderBugReports() {
       `;
     })
     .join("");
+
+  if (els.bugProcessedList) {
+    els.bugProcessedList.innerHTML = processedReports.length === 0
+      ? '<div class="empty-state">No processed bug reports yet.</div>'
+      : processedReports
+      .map((report) => {
+        const isActive = report.id === state.activeBugId;
+        return `
+          <article class="item-card ${isActive ? "active" : ""}" data-bug-id="${escapeHtml(report.id)}">
+            <p class="item-title">${escapeHtml(report.title)}</p>
+            <div>
+              <span class="chip chip-priority-${escapeHtml(report.priority)}">${escapeHtml(report.priority)}</span>
+              <span class="chip chip-area">${escapeHtml(report.area)}</span>
+              <span class="chip chip-decision">${escapeHtml(report.resolution)}</span>
+            </div>
+            <p>${escapeHtml(report.summary)}</p>
+          </article>
+        `;
+      })
+      .join("");
+  }
 
   const active = filtered.find((entry) => entry.id === state.activeBugId) || filtered[0];
   renderBugDetail(active);
@@ -262,7 +343,7 @@ function getFilteredApplications() {
 function getFilteredSuggestions() {
   const searchValue = state.suggestionFilters.search.toLowerCase();
   return suggestions.filter((suggestion) => {
-    const matchesArea = state.suggestionFilters.area === "all" || suggestion.area === state.suggestionFilters.area;
+    const matchesArea = state.suggestionFilters.area === "all" || suggestion.areas.includes(state.suggestionFilters.area);
     const matchesSearch = !searchValue
       || suggestion.title.toLowerCase().includes(searchValue)
       || suggestion.summary.toLowerCase().includes(searchValue)
@@ -276,12 +357,25 @@ function renderSuggestionDetail(suggestion) {
     els.suggestionDetailTitle.textContent = "No matching suggestions";
     els.suggestionDetailMeta.textContent = "Try adjusting search or filter toggles.";
     els.suggestionDetailDescription.textContent = "";
+    if (els.suggestionMarkAccepted) {
+      els.suggestionMarkAccepted.disabled = true;
+      els.suggestionMarkPlanned.disabled = true;
+      els.suggestionMarkDenied.disabled = true;
+    }
     return;
   }
 
   els.suggestionDetailTitle.textContent = suggestion.title;
-  els.suggestionDetailMeta.textContent = `Area: ${suggestion.area}`;
+  const areasText = suggestion.areas.join(", ");
+  const statusText = suggestion.decision ? ` | Status: ${suggestion.decision}` : " | Status: Open";
+  els.suggestionDetailMeta.textContent = `Areas: ${areasText}${statusText}`;
   els.suggestionDetailDescription.textContent = suggestion.description;
+  if (els.suggestionMarkAccepted) {
+    const isProcessed = Boolean(suggestion.decision);
+    els.suggestionMarkAccepted.disabled = isProcessed;
+    els.suggestionMarkPlanned.disabled = isProcessed;
+    els.suggestionMarkDenied.disabled = isProcessed;
+  }
 }
 
 function renderSuggestions() {
@@ -290,8 +384,14 @@ function renderSuggestions() {
   }
 
   const filtered = getFilteredSuggestions();
-  if (filtered.length === 0) {
+  const openSuggestions = filtered.filter((suggestion) => !suggestion.decision);
+  const processedSuggestions = filtered.filter((suggestion) => suggestion.decision);
+
+  if (openSuggestions.length === 0 && processedSuggestions.length === 0) {
     els.suggestionList.innerHTML = '<div class="empty-state">No suggestions match current filters.</div>';
+    if (els.suggestionProcessedList) {
+      els.suggestionProcessedList.innerHTML = '<div class="empty-state">No processed suggestions yet.</div>';
+    }
     renderSuggestionDetail(null);
     return;
   }
@@ -300,20 +400,43 @@ function renderSuggestions() {
     state.activeSuggestionId = filtered[0].id;
   }
 
-  els.suggestionList.innerHTML = filtered
+  els.suggestionList.innerHTML = openSuggestions.length === 0
+    ? '<div class="empty-state">No open suggestions for this filter.</div>'
+    : openSuggestions
     .map((suggestion) => {
       const isActive = suggestion.id === state.activeSuggestionId;
+      const chips = suggestion.areas
+        .map((area) => `<span class="chip chip-area">${escapeHtml(area)}</span>`)
+        .join("");
       return `
         <article class="item-card ${isActive ? "active" : ""}" data-suggestion-id="${escapeHtml(suggestion.id)}">
           <p class="item-title">${escapeHtml(suggestion.title)}</p>
-          <div>
-            <span class="chip chip-area">${escapeHtml(suggestion.area)}</span>
-          </div>
+          <div>${chips}</div>
           <p>${escapeHtml(suggestion.summary)}</p>
         </article>
       `;
     })
     .join("");
+
+  if (els.suggestionProcessedList) {
+    els.suggestionProcessedList.innerHTML = processedSuggestions.length === 0
+      ? '<div class="empty-state">No processed suggestions yet.</div>'
+      : processedSuggestions
+      .map((suggestion) => {
+        const isActive = suggestion.id === state.activeSuggestionId;
+        const chips = suggestion.areas
+          .map((area) => `<span class="chip chip-area">${escapeHtml(area)}</span>`)
+          .join("");
+        return `
+          <article class="item-card ${isActive ? "active" : ""}" data-suggestion-id="${escapeHtml(suggestion.id)}">
+            <p class="item-title">${escapeHtml(suggestion.title)}</p>
+            <div>${chips}<span class="chip chip-decision">${escapeHtml(suggestion.decision)}</span></div>
+            <p>${escapeHtml(suggestion.summary)}</p>
+          </article>
+        `;
+      })
+      .join("");
+  }
 
   const active = filtered.find((entry) => entry.id === state.activeSuggestionId) || filtered[0];
   renderSuggestionDetail(active);
@@ -324,12 +447,37 @@ function renderApplicationDetail(application) {
     els.applicationDetailTitle.textContent = "No matching applications";
     els.applicationDetailMeta.textContent = "Try adjusting search or filter toggles.";
     els.applicationDetailDescription.textContent = "";
+    if (els.applicationDetailAnswers) {
+      els.applicationDetailAnswers.innerHTML = "";
+    }
+    if (els.applicationMarkAccepted) {
+      els.applicationMarkAccepted.disabled = true;
+      els.applicationMarkDenied.disabled = true;
+    }
     return;
   }
 
   els.applicationDetailTitle.textContent = application.title;
-  els.applicationDetailMeta.textContent = `Role: ${application.role} | Status: ${application.status}`;
+  const decisionText = application.decision ? ` | Decision: ${application.decision}` : " | Decision: Open";
+  els.applicationDetailMeta.textContent = `Role: ${application.role} | Status: ${application.status}${decisionText}`;
   els.applicationDetailDescription.textContent = application.description;
+  if (els.applicationDetailAnswers) {
+    els.applicationDetailAnswers.innerHTML = application.answers
+      .map((entry) => {
+        return `
+          <article class="qa-item">
+            <p class="qa-question">${escapeHtml(entry.question)}</p>
+            <p class="qa-answer">${escapeHtml(entry.answer)}</p>
+          </article>
+        `;
+      })
+      .join("");
+  }
+  if (els.applicationMarkAccepted) {
+    const isProcessed = Boolean(application.decision);
+    els.applicationMarkAccepted.disabled = isProcessed;
+    els.applicationMarkDenied.disabled = isProcessed;
+  }
 }
 
 function renderApplications() {
@@ -338,8 +486,14 @@ function renderApplications() {
   }
 
   const filtered = getFilteredApplications();
-  if (filtered.length === 0) {
+  const openApplications = filtered.filter((application) => !application.decision);
+  const processedApplications = filtered.filter((application) => application.decision);
+
+  if (openApplications.length === 0 && processedApplications.length === 0) {
     els.applicationList.innerHTML = '<div class="empty-state">No applications match current filters.</div>';
+    if (els.applicationProcessedList) {
+      els.applicationProcessedList.innerHTML = '<div class="empty-state">No processed applications yet.</div>';
+    }
     renderApplicationDetail(null);
     return;
   }
@@ -348,7 +502,9 @@ function renderApplications() {
     state.activeApplicationId = filtered[0].id;
   }
 
-  els.applicationList.innerHTML = filtered
+  els.applicationList.innerHTML = openApplications.length === 0
+    ? '<div class="empty-state">No open applications for this filter.</div>'
+    : openApplications
     .map((application) => {
       const isActive = application.id === state.activeApplicationId;
       return `
@@ -363,6 +519,27 @@ function renderApplications() {
       `;
     })
     .join("");
+
+  if (els.applicationProcessedList) {
+    els.applicationProcessedList.innerHTML = processedApplications.length === 0
+      ? '<div class="empty-state">No processed applications yet.</div>'
+      : processedApplications
+      .map((application) => {
+        const isActive = application.id === state.activeApplicationId;
+        return `
+          <article class="item-card ${isActive ? "active" : ""}" data-application-id="${escapeHtml(application.id)}">
+            <p class="item-title">${escapeHtml(application.title)}</p>
+            <div>
+              <span class="chip chip-role">${escapeHtml(application.role)}</span>
+              <span class="chip chip-status">${escapeHtml(application.status)}</span>
+              <span class="chip chip-decision">${escapeHtml(application.decision)}</span>
+            </div>
+            <p>${escapeHtml(application.summary)}</p>
+          </article>
+        `;
+      })
+      .join("");
+  }
 
   const active = filtered.find((entry) => entry.id === state.activeApplicationId) || filtered[0];
   renderApplicationDetail(active);
@@ -396,6 +573,39 @@ function handleSuggestionListClick(event) {
 
   state.activeSuggestionId = card.dataset.suggestionId;
   renderSuggestions();
+}
+
+function markActiveBug(resolution) {
+  const active = bugReports.find((entry) => entry.id === state.activeBugId);
+  if (!active || active.resolution) {
+    return;
+  }
+
+  active.resolution = resolution;
+  showToast(`Bug marked as ${resolution}`);
+  renderBugReports();
+}
+
+function markActiveSuggestion(decision) {
+  const active = suggestions.find((entry) => entry.id === state.activeSuggestionId);
+  if (!active || active.decision) {
+    return;
+  }
+
+  active.decision = decision;
+  showToast(`Suggestion marked as ${decision}`);
+  renderSuggestions();
+}
+
+function markActiveApplication(decision) {
+  const active = applications.find((entry) => entry.id === state.activeApplicationId);
+  if (!active || active.decision) {
+    return;
+  }
+
+  active.decision = decision;
+  showToast(`Application ${decision}`);
+  renderApplications();
 }
 
 function onBugPriorityFilterClick(event) {
@@ -929,6 +1139,16 @@ if (els.bugList) {
   els.bugList.addEventListener("click", handleBugListClick);
 }
 
+if (els.bugProcessedList) {
+  els.bugProcessedList.addEventListener("click", handleBugListClick);
+}
+
+if (els.bugMarkCompleted) {
+  els.bugMarkCompleted.addEventListener("click", () => markActiveBug("Completed"));
+  els.bugMarkIntended.addEventListener("click", () => markActiveBug("Intended"));
+  els.bugMarkDenied.addEventListener("click", () => markActiveBug("Denied"));
+}
+
 if (els.suggestionSearchInput) {
   els.suggestionSearchInput.addEventListener("input", (event) => {
     state.suggestionFilters.search = event.target.value.trim();
@@ -942,6 +1162,16 @@ if (els.suggestionAreaFilters) {
 
 if (els.suggestionList) {
   els.suggestionList.addEventListener("click", handleSuggestionListClick);
+}
+
+if (els.suggestionProcessedList) {
+  els.suggestionProcessedList.addEventListener("click", handleSuggestionListClick);
+}
+
+if (els.suggestionMarkAccepted) {
+  els.suggestionMarkAccepted.addEventListener("click", () => markActiveSuggestion("Accepted"));
+  els.suggestionMarkPlanned.addEventListener("click", () => markActiveSuggestion("Planned"));
+  els.suggestionMarkDenied.addEventListener("click", () => markActiveSuggestion("Denied"));
 }
 
 if (els.applicationSearchInput) {
@@ -961,6 +1191,15 @@ if (els.applicationStatusFilters) {
 
 if (els.applicationList) {
   els.applicationList.addEventListener("click", handleApplicationListClick);
+}
+
+if (els.applicationProcessedList) {
+  els.applicationProcessedList.addEventListener("click", handleApplicationListClick);
+}
+
+if (els.applicationMarkAccepted) {
+  els.applicationMarkAccepted.addEventListener("click", () => markActiveApplication("Accepted"));
+  els.applicationMarkDenied.addEventListener("click", () => markActiveApplication("Denied"));
 }
 
 renderBugReports();
