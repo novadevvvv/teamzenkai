@@ -21,6 +21,18 @@ const state = {
     role: "all",
     status: "all",
   },
+  pagination: {
+    bugProcessedPage: 1,
+    suggestionProcessedPage: 1,
+    applicationProcessedPage: 1,
+    compensationPage: 1,
+  },
+  compensationHistory: [],
+};
+
+const PAGINATION = {
+  processedPerPage: 4,
+  compensationPerPage: 5,
 };
 
 const bugReports = [
@@ -146,6 +158,12 @@ const els = {
   navButtons: document.querySelectorAll(".nav-item"),
   sections: document.querySelectorAll("[data-section-view]"),
   compensationForm: document.getElementById("compensationForm"),
+  openCompFormButton: document.getElementById("openCompFormButton"),
+  compCancel: document.getElementById("compCancel"),
+  compLogList: document.getElementById("compLogList"),
+  compLogPrev: document.getElementById("compLogPrev"),
+  compLogNext: document.getElementById("compLogNext"),
+  compLogPageInfo: document.getElementById("compLogPageInfo"),
   compSteps: document.querySelectorAll(".comp-step"),
   compUserInput: document.getElementById("compUserInput"),
   compTypeSelect: document.getElementById("compTypeSelect"),
@@ -174,6 +192,9 @@ const els = {
   bugAreaFilters: document.getElementById("bugAreaFilters"),
   bugList: document.getElementById("bugList"),
   bugProcessedList: document.getElementById("bugProcessedList"),
+  bugProcessedPrev: document.getElementById("bugProcessedPrev"),
+  bugProcessedNext: document.getElementById("bugProcessedNext"),
+  bugProcessedPageInfo: document.getElementById("bugProcessedPageInfo"),
   bugDetailTitle: document.getElementById("bugDetailTitle"),
   bugDetailMeta: document.getElementById("bugDetailMeta"),
   bugDetailDescription: document.getElementById("bugDetailDescription"),
@@ -184,6 +205,9 @@ const els = {
   suggestionAreaFilters: document.getElementById("suggestionAreaFilters"),
   suggestionList: document.getElementById("suggestionList"),
   suggestionProcessedList: document.getElementById("suggestionProcessedList"),
+  suggestionProcessedPrev: document.getElementById("suggestionProcessedPrev"),
+  suggestionProcessedNext: document.getElementById("suggestionProcessedNext"),
+  suggestionProcessedPageInfo: document.getElementById("suggestionProcessedPageInfo"),
   suggestionDetailTitle: document.getElementById("suggestionDetailTitle"),
   suggestionDetailMeta: document.getElementById("suggestionDetailMeta"),
   suggestionDetailDescription: document.getElementById("suggestionDetailDescription"),
@@ -195,6 +219,9 @@ const els = {
   applicationStatusFilters: document.getElementById("applicationStatusFilters"),
   applicationList: document.getElementById("applicationList"),
   applicationProcessedList: document.getElementById("applicationProcessedList"),
+  applicationProcessedPrev: document.getElementById("applicationProcessedPrev"),
+  applicationProcessedNext: document.getElementById("applicationProcessedNext"),
+  applicationProcessedPageInfo: document.getElementById("applicationProcessedPageInfo"),
   applicationDetailTitle: document.getElementById("applicationDetailTitle"),
   applicationDetailMeta: document.getElementById("applicationDetailMeta"),
   applicationDetailDescription: document.getElementById("applicationDetailDescription"),
@@ -222,6 +249,106 @@ function setSingleChipToggle(container, key, value) {
     const matches = button.dataset[key] === value;
     button.classList.toggle("active", matches);
   });
+}
+
+function paginateItems(items, requestedPage, perPage) {
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  const page = Math.min(Math.max(requestedPage, 1), totalPages);
+  const start = (page - 1) * perPage;
+  return {
+    page,
+    totalPages,
+    items: items.slice(start, start + perPage),
+  };
+}
+
+function updatePaginationUI(prevButton, nextButton, infoEl, page, totalPages) {
+  if (!prevButton || !nextButton || !infoEl) {
+    return;
+  }
+
+  prevButton.disabled = page <= 1;
+  nextButton.disabled = page >= totalPages;
+  infoEl.textContent = `Page ${page} / ${totalPages}`;
+}
+
+function loadCompensationHistory() {
+  try {
+    const raw = localStorage.getItem("teamzenkai-comp-history");
+    if (!raw) {
+      state.compensationHistory = [];
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    state.compensationHistory = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    state.compensationHistory = [];
+  }
+}
+
+function saveCompensationHistory() {
+  try {
+    localStorage.setItem("teamzenkai-comp-history", JSON.stringify(state.compensationHistory));
+  } catch {
+    // Ignore write failures for restricted browser storage contexts.
+  }
+}
+
+function renderCompensationLogs() {
+  if (!els.compLogList) {
+    return;
+  }
+
+  const sorted = [...state.compensationHistory].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  if (sorted.length === 0) {
+    els.compLogList.innerHTML = '<div class="empty-state">No compensation submissions yet.</div>';
+    updatePaginationUI(els.compLogPrev, els.compLogNext, els.compLogPageInfo, 1, 1);
+    return;
+  }
+
+  const paged = paginateItems(sorted, state.pagination.compensationPage, PAGINATION.compensationPerPage);
+  state.pagination.compensationPage = paged.page;
+
+  els.compLogList.innerHTML = paged.items
+    .map((entry) => {
+      const when = new Date(entry.createdAt).toLocaleString();
+      return `
+        <article class="item-card">
+          <p class="item-title">${escapeHtml(entry.username)}</p>
+          <div>
+            <span class="chip chip-role">${escapeHtml(entry.type)}</span>
+            <span class="chip chip-area">${escapeHtml(entry.selection)}</span>
+            <span class="chip chip-status">${escapeHtml(String(entry.amount))}</span>
+          </div>
+          <p>Granted ${escapeHtml(String(entry.amount))} ${escapeHtml(entry.selection)} • ${escapeHtml(when)}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  updatePaginationUI(els.compLogPrev, els.compLogNext, els.compLogPageInfo, paged.page, paged.totalPages);
+}
+
+function openCompensationForm() {
+  if (!els.compensationForm) {
+    return;
+  }
+
+  resetCompensationWizard();
+  els.compensationForm.classList.remove("hidden");
+}
+
+function closeCompensationForm() {
+  if (!els.compensationForm) {
+    return;
+  }
+
+  els.compensationForm.classList.add("hidden");
+  resetCompensationWizard();
 }
 
 function getFilteredBugReports() {
@@ -276,6 +403,7 @@ function renderBugReports() {
     if (els.bugProcessedList) {
       els.bugProcessedList.innerHTML = '<div class="empty-state">No processed bug reports yet.</div>';
     }
+    updatePaginationUI(els.bugProcessedPrev, els.bugProcessedNext, els.bugProcessedPageInfo, 1, 1);
     renderBugDetail(null);
     return;
   }
@@ -303,9 +431,11 @@ function renderBugReports() {
     .join("");
 
   if (els.bugProcessedList) {
+    const pagedProcessed = paginateItems(processedReports, state.pagination.bugProcessedPage, PAGINATION.processedPerPage);
+    state.pagination.bugProcessedPage = pagedProcessed.page;
     els.bugProcessedList.innerHTML = processedReports.length === 0
       ? '<div class="empty-state">No processed bug reports yet.</div>'
-      : processedReports
+      : pagedProcessed.items
       .map((report) => {
         const isActive = report.id === state.activeBugId;
         return `
@@ -321,6 +451,13 @@ function renderBugReports() {
         `;
       })
       .join("");
+    updatePaginationUI(
+      els.bugProcessedPrev,
+      els.bugProcessedNext,
+      els.bugProcessedPageInfo,
+      pagedProcessed.page,
+      pagedProcessed.totalPages
+    );
   }
 
   const active = filtered.find((entry) => entry.id === state.activeBugId) || filtered[0];
@@ -392,6 +529,7 @@ function renderSuggestions() {
     if (els.suggestionProcessedList) {
       els.suggestionProcessedList.innerHTML = '<div class="empty-state">No processed suggestions yet.</div>';
     }
+    updatePaginationUI(els.suggestionProcessedPrev, els.suggestionProcessedNext, els.suggestionProcessedPageInfo, 1, 1);
     renderSuggestionDetail(null);
     return;
   }
@@ -419,9 +557,11 @@ function renderSuggestions() {
     .join("");
 
   if (els.suggestionProcessedList) {
+    const pagedProcessed = paginateItems(processedSuggestions, state.pagination.suggestionProcessedPage, PAGINATION.processedPerPage);
+    state.pagination.suggestionProcessedPage = pagedProcessed.page;
     els.suggestionProcessedList.innerHTML = processedSuggestions.length === 0
       ? '<div class="empty-state">No processed suggestions yet.</div>'
-      : processedSuggestions
+      : pagedProcessed.items
       .map((suggestion) => {
         const isActive = suggestion.id === state.activeSuggestionId;
         const chips = suggestion.areas
@@ -436,6 +576,13 @@ function renderSuggestions() {
         `;
       })
       .join("");
+    updatePaginationUI(
+      els.suggestionProcessedPrev,
+      els.suggestionProcessedNext,
+      els.suggestionProcessedPageInfo,
+      pagedProcessed.page,
+      pagedProcessed.totalPages
+    );
   }
 
   const active = filtered.find((entry) => entry.id === state.activeSuggestionId) || filtered[0];
@@ -494,6 +641,13 @@ function renderApplications() {
     if (els.applicationProcessedList) {
       els.applicationProcessedList.innerHTML = '<div class="empty-state">No processed applications yet.</div>';
     }
+    updatePaginationUI(
+      els.applicationProcessedPrev,
+      els.applicationProcessedNext,
+      els.applicationProcessedPageInfo,
+      1,
+      1
+    );
     renderApplicationDetail(null);
     return;
   }
@@ -521,9 +675,11 @@ function renderApplications() {
     .join("");
 
   if (els.applicationProcessedList) {
+    const pagedProcessed = paginateItems(processedApplications, state.pagination.applicationProcessedPage, PAGINATION.processedPerPage);
+    state.pagination.applicationProcessedPage = pagedProcessed.page;
     els.applicationProcessedList.innerHTML = processedApplications.length === 0
       ? '<div class="empty-state">No processed applications yet.</div>'
-      : processedApplications
+      : pagedProcessed.items
       .map((application) => {
         const isActive = application.id === state.activeApplicationId;
         return `
@@ -539,6 +695,13 @@ function renderApplications() {
         `;
       })
       .join("");
+    updatePaginationUI(
+      els.applicationProcessedPrev,
+      els.applicationProcessedNext,
+      els.applicationProcessedPageInfo,
+      pagedProcessed.page,
+      pagedProcessed.totalPages
+    );
   }
 
   const active = filtered.find((entry) => entry.id === state.activeApplicationId) || filtered[0];
@@ -582,6 +745,7 @@ function markActiveBug(resolution) {
   }
 
   active.resolution = resolution;
+  state.pagination.bugProcessedPage = 1;
   showToast(`Bug marked as ${resolution}`);
   renderBugReports();
 }
@@ -593,6 +757,7 @@ function markActiveSuggestion(decision) {
   }
 
   active.decision = decision;
+  state.pagination.suggestionProcessedPage = 1;
   showToast(`Suggestion marked as ${decision}`);
   renderSuggestions();
 }
@@ -604,6 +769,7 @@ function markActiveApplication(decision) {
   }
 
   active.decision = decision;
+  state.pagination.applicationProcessedPage = 1;
   showToast(`Application ${decision}`);
   renderApplications();
 }
@@ -615,6 +781,7 @@ function onBugPriorityFilterClick(event) {
   }
 
   state.bugFilters.priority = button.dataset.priority;
+  state.pagination.bugProcessedPage = 1;
   setSingleChipToggle(els.bugPriorityFilters, "priority", state.bugFilters.priority);
   renderBugReports();
 }
@@ -626,6 +793,7 @@ function onBugAreaFilterClick(event) {
   }
 
   state.bugFilters.area = button.dataset.area;
+  state.pagination.bugProcessedPage = 1;
   setSingleChipToggle(els.bugAreaFilters, "area", state.bugFilters.area);
   renderBugReports();
 }
@@ -637,6 +805,7 @@ function onApplicationRoleFilterClick(event) {
   }
 
   state.applicationFilters.role = button.dataset.role;
+  state.pagination.applicationProcessedPage = 1;
   setSingleChipToggle(els.applicationRoleFilters, "role", state.applicationFilters.role);
   renderApplications();
 }
@@ -648,6 +817,7 @@ function onSuggestionAreaFilterClick(event) {
   }
 
   state.suggestionFilters.area = button.dataset.suggestionArea;
+  state.pagination.suggestionProcessedPage = 1;
   setSingleChipToggle(els.suggestionAreaFilters, "suggestionArea", state.suggestionFilters.area);
   renderSuggestions();
 }
@@ -659,6 +829,7 @@ function onApplicationStatusFilterClick(event) {
   }
 
   state.applicationFilters.status = button.dataset.status;
+  state.pagination.applicationProcessedPage = 1;
   setSingleChipToggle(els.applicationStatusFilters, "status", state.applicationFilters.status);
   renderApplications();
 }
@@ -772,7 +943,8 @@ function setActiveSection(sectionName) {
   });
 
   if (sectionName === "compensation") {
-    resetCompensationWizard();
+    closeCompensationForm();
+    renderCompensationLogs();
   }
 }
 
@@ -911,10 +1083,18 @@ function onCompensationSubmit(event) {
       return;
     }
 
-    setCompensationMessage(
-      `Submitted: ${userValue} receives ${amount} ${currency}.`,
-      "success"
-    );
+    state.compensationHistory.push({
+      username: userValue,
+      type: "Currency",
+      selection: currency,
+      amount,
+      createdAt: new Date().toISOString(),
+    });
+    saveCompensationHistory();
+    state.pagination.compensationPage = 1;
+    renderCompensationLogs();
+    setCompensationMessage(`Submitted: ${userValue} receives ${amount} ${currency}.`, "success");
+    closeCompensationForm();
     showToast("Compensation Successful");
     return;
   }
@@ -927,10 +1107,18 @@ function onCompensationSubmit(event) {
       return;
     }
 
-    setCompensationMessage(
-      `Submitted: ${userValue} receives ${amount} of ${character}.`,
-      "success"
-    );
+    state.compensationHistory.push({
+      username: userValue,
+      type: "Character",
+      selection: character,
+      amount,
+      createdAt: new Date().toISOString(),
+    });
+    saveCompensationHistory();
+    state.pagination.compensationPage = 1;
+    renderCompensationLogs();
+    setCompensationMessage(`Submitted: ${userValue} receives ${amount} of ${character}.`, "success");
+    closeCompensationForm();
     showToast("Compensation Successful");
     return;
   }
@@ -1092,6 +1280,8 @@ async function init() {
     setMessage("");
   }
 
+  loadCompensationHistory();
+  renderCompensationLogs();
   restoreSession();
 }
 
@@ -1104,6 +1294,8 @@ els.navButtons.forEach((button) => {
 });
 
 if (els.compensationForm) {
+  els.openCompFormButton.addEventListener("click", openCompensationForm);
+  els.compCancel.addEventListener("click", closeCompensationForm);
   els.compNextToType.addEventListener("click", nextToTypeStep);
   els.compBackToUser.addEventListener("click", () => showCompensationStep(1));
   els.compNextToDetails.addEventListener("click", nextToDetailsStep);
@@ -1115,6 +1307,17 @@ if (els.compensationForm) {
   updateCompensationTypeFields();
 }
 
+if (els.compLogPrev) {
+  els.compLogPrev.addEventListener("click", () => {
+    state.pagination.compensationPage -= 1;
+    renderCompensationLogs();
+  });
+  els.compLogNext.addEventListener("click", () => {
+    state.pagination.compensationPage += 1;
+    renderCompensationLogs();
+  });
+}
+
 if (els.maintenanceToggleButton) {
   els.maintenanceToggleButton.addEventListener("click", toggleMaintenance);
   updateMaintenanceUI();
@@ -1123,6 +1326,7 @@ if (els.maintenanceToggleButton) {
 if (els.bugSearchInput) {
   els.bugSearchInput.addEventListener("input", (event) => {
     state.bugFilters.search = event.target.value.trim();
+    state.pagination.bugProcessedPage = 1;
     renderBugReports();
   });
 }
@@ -1149,9 +1353,21 @@ if (els.bugMarkCompleted) {
   els.bugMarkDenied.addEventListener("click", () => markActiveBug("Denied"));
 }
 
+if (els.bugProcessedPrev) {
+  els.bugProcessedPrev.addEventListener("click", () => {
+    state.pagination.bugProcessedPage -= 1;
+    renderBugReports();
+  });
+  els.bugProcessedNext.addEventListener("click", () => {
+    state.pagination.bugProcessedPage += 1;
+    renderBugReports();
+  });
+}
+
 if (els.suggestionSearchInput) {
   els.suggestionSearchInput.addEventListener("input", (event) => {
     state.suggestionFilters.search = event.target.value.trim();
+    state.pagination.suggestionProcessedPage = 1;
     renderSuggestions();
   });
 }
@@ -1174,9 +1390,21 @@ if (els.suggestionMarkAccepted) {
   els.suggestionMarkDenied.addEventListener("click", () => markActiveSuggestion("Denied"));
 }
 
+if (els.suggestionProcessedPrev) {
+  els.suggestionProcessedPrev.addEventListener("click", () => {
+    state.pagination.suggestionProcessedPage -= 1;
+    renderSuggestions();
+  });
+  els.suggestionProcessedNext.addEventListener("click", () => {
+    state.pagination.suggestionProcessedPage += 1;
+    renderSuggestions();
+  });
+}
+
 if (els.applicationSearchInput) {
   els.applicationSearchInput.addEventListener("input", (event) => {
     state.applicationFilters.search = event.target.value.trim();
+    state.pagination.applicationProcessedPage = 1;
     renderApplications();
   });
 }
@@ -1200,6 +1428,17 @@ if (els.applicationProcessedList) {
 if (els.applicationMarkAccepted) {
   els.applicationMarkAccepted.addEventListener("click", () => markActiveApplication("Accepted"));
   els.applicationMarkDenied.addEventListener("click", () => markActiveApplication("Denied"));
+}
+
+if (els.applicationProcessedPrev) {
+  els.applicationProcessedPrev.addEventListener("click", () => {
+    state.pagination.applicationProcessedPage -= 1;
+    renderApplications();
+  });
+  els.applicationProcessedNext.addEventListener("click", () => {
+    state.pagination.applicationProcessedPage += 1;
+    renderApplications();
+  });
 }
 
 renderBugReports();

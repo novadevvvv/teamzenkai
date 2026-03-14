@@ -90,14 +90,29 @@
           <section class="dashboard-section hidden" id="section-compensation" data-section-view="compensation">
             <article class="tile tile-wide">
               <h3>Compensation Entry</h3>
-              <p class="comp-subtext">Complete each step, then submit the compensation request.</p>
+              <p class="comp-subtext">Submit compensation records and review recent history.</p>
 
-              <form id="compensationForm" class="comp-form" novalidate>
+              <div class="comp-home-actions">
+                <button id="openCompFormButton" type="button">Submit a Compensation</button>
+              </div>
+
+              <div class="comp-history-wrap">
+                <p class="list-title">Compensation Logs</p>
+                <div id="compLogList" class="item-list item-list-processed"></div>
+                <div class="pagination-row">
+                  <button type="button" class="ghost-btn" id="compLogPrev">Prev</button>
+                  <p id="compLogPageInfo" class="pagination-info">Page 1 / 1</p>
+                  <button type="button" class="ghost-btn" id="compLogNext">Next</button>
+                </div>
+              </div>
+
+              <form id="compensationForm" class="comp-form hidden" novalidate>
                 <section class="comp-step" data-step="1">
                   <p class="step-title">Step 1: Select Username</p>
                   <label for="compUserInput">User</label>
                   <input id="compUserInput" name="compUserInput" type="text" placeholder="Enter username" required>
                   <div class="step-actions">
+                    <button type="button" class="ghost-btn" id="compCancel">Cancel</button>
                     <button type="button" id="compNextToType">Next</button>
                   </div>
                 </section>
@@ -200,6 +215,11 @@
                   <div id="bugList" class="item-list"></div>
                   <p class="list-title list-title-processed">Processed Reports</p>
                   <div id="bugProcessedList" class="item-list item-list-processed"></div>
+                  <div class="pagination-row">
+                    <button type="button" class="ghost-btn" id="bugProcessedPrev">Prev</button>
+                    <p id="bugProcessedPageInfo" class="pagination-info">Page 1 / 1</p>
+                    <button type="button" class="ghost-btn" id="bugProcessedNext">Next</button>
+                  </div>
                 </div>
                 <aside class="detail-panel" id="bugDetailPanel">
                   <h4 id="bugDetailTitle">Select a bug report</h4>
@@ -234,6 +254,11 @@
                   <div id="suggestionList" class="item-list"></div>
                   <p class="list-title list-title-processed">Processed Suggestions</p>
                   <div id="suggestionProcessedList" class="item-list item-list-processed"></div>
+                  <div class="pagination-row">
+                    <button type="button" class="ghost-btn" id="suggestionProcessedPrev">Prev</button>
+                    <p id="suggestionProcessedPageInfo" class="pagination-info">Page 1 / 1</p>
+                    <button type="button" class="ghost-btn" id="suggestionProcessedNext">Next</button>
+                  </div>
                 </div>
                 <aside class="detail-panel" id="suggestionDetailPanel">
                   <h4 id="suggestionDetailTitle">Select a suggestion</h4>
@@ -274,6 +299,11 @@
                   <div id="applicationList" class="item-list"></div>
                   <p class="list-title list-title-processed">Processed Applications</p>
                   <div id="applicationProcessedList" class="item-list item-list-processed"></div>
+                  <div class="pagination-row">
+                    <button type="button" class="ghost-btn" id="applicationProcessedPrev">Prev</button>
+                    <p id="applicationProcessedPageInfo" class="pagination-info">Page 1 / 1</p>
+                    <button type="button" class="ghost-btn" id="applicationProcessedNext">Next</button>
+                  </div>
                 </div>
                 <aside class="detail-panel" id="applicationDetailPanel">
                   <h4 id="applicationDetailTitle">Select an application</h4>

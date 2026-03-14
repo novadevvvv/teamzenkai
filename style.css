@@ -335,9 +335,29 @@ button:active {
   color: var(--ink-soft);
 }
 
+.comp-home-actions {
+  margin-bottom: 0.8rem;
+}
+
+.comp-home-actions button {
+  margin-top: 0;
+}
+
+.comp-history-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
 .comp-form {
   display: grid;
   gap: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .comp-step {
@@ -424,6 +444,26 @@ button:active {
   margin-top: 0.35rem;
 }
 
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.pagination-row button {
+  margin-top: 0;
+  padding: 0.36rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.pagination-info {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
 .module-layout {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
@@ -433,13 +473,13 @@ button:active {
 .item-list {
   display: grid;
   gap: 0.6rem;
-  max-height: 520px;
+  max-height: 420px;
   overflow: auto;
   padding-right: 0.2rem;
 }
 
 .item-list-processed {
-  max-height: 230px;
+  max-height: 190px;
 }
 
 .item-card {
@@ -559,6 +599,8 @@ button:active {
 
 .detail-actions button {
   margin-top: 0;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
 }
 
 .qa-list {
