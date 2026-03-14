@@ -34,7 +34,7 @@ body {
 }
 
 .shell {
-  width: min(880px, 100%);
+  width: min(1080px, 100%);
   animation: rise 600ms ease-out;
 }
 
@@ -53,6 +53,11 @@ body {
   font-weight: 500;
   line-height: 1.1;
   margin: 0.3rem 0 0.7rem;
+}
+
+.panel-card {
+  padding: 0;
+  overflow: hidden;
 }
 
 .eyebrow {
@@ -131,12 +136,86 @@ button:active {
   display: none;
 }
 
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 560px;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, rgba(16, 109, 71, 0.94), rgba(26, 90, 134, 0.95));
+  color: #f0fff8;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar-header h2 {
+  margin: 0.35rem 0 0;
+}
+
+.sidebar-header .eyebrow {
+  color: rgba(240, 255, 248, 0.85);
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  margin: 0;
+  text-align: left;
+  border: 1px solid rgba(240, 255, 248, 0.2);
+  background: rgba(240, 255, 248, 0.08);
+  color: #f0fff8;
+}
+
+.nav-item:hover {
+  filter: brightness(1.08);
+}
+
+.nav-item.active {
+  background: rgba(240, 255, 248, 0.2);
+  border-color: rgba(240, 255, 248, 0.52);
+}
+
+.sidebar-logout {
+  margin-top: auto;
+  background: rgba(240, 255, 248, 0.12);
+  border-color: rgba(240, 255, 248, 0.32);
+  color: #f0fff8;
+}
+
+.dashboard-main {
+  padding: clamp(1rem, 2.3vw, 1.5rem);
+}
+
 .panel-top {
   display: flex;
   justify-content: space-between;
   align-items: start;
   gap: 1rem;
   margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+}
+
+.welcome {
+  font-family: "Newsreader", serif;
+  font-size: clamp(1.4rem, 2.4vw, 1.95rem);
+  margin: 0.25rem 0 0;
+}
+
+.session-role {
+  margin: 0.35rem 0 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(16, 109, 71, 0.12);
+  border: 1px solid rgba(16, 109, 71, 0.22);
+  color: var(--accent-2);
+  font-weight: 700;
 }
 
 .grid {
@@ -181,6 +260,25 @@ button:active {
 }
 
 @media (max-width: 640px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-bottom: 1px solid rgba(240, 255, 248, 0.2);
+  }
+
+  .sidebar-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .nav-item {
+    text-align: center;
+    font-size: 0.88rem;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }

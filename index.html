@@ -30,27 +30,82 @@
     </section>
 
     <section class="card panel-card hidden" id="panelCard" aria-labelledby="panelHeading">
-      <div class="panel-top">
-        <div>
-          <p class="eyebrow">Session Active</p>
-          <h2 id="panelHeading">Welcome, <span id="displayName"></span></h2>
-        </div>
-        <button id="logoutButton" class="ghost-btn">Log Out</button>
-      </div>
+      <div class="dashboard-shell">
+        <aside class="sidebar" aria-label="Dashboard Navigation">
+          <div class="sidebar-header">
+            <p class="eyebrow">Team Zenkai</p>
+            <h2 id="panelHeading">Control Panel</h2>
+          </div>
 
-      <div class="grid">
-        <article class="tile">
-          <h3>Role</h3>
-          <p id="roleValue"></p>
-        </article>
-        <article class="tile">
-          <h3>Last Login</h3>
-          <p id="lastLoginValue"></p>
-        </article>
-        <article class="tile tile-wide">
-          <h3>Notes</h3>
-          <p id="notesValue"></p>
-        </article>
+          <nav class="sidebar-nav">
+            <button class="nav-item active" type="button" data-section="home">Home</button>
+            <button class="nav-item" type="button" data-section="compensation">Compensation</button>
+            <button class="nav-item" type="button" data-section="maintenance">Maintenance</button>
+          </nav>
+
+          <button id="logoutButton" class="ghost-btn sidebar-logout">Log Out</button>
+        </aside>
+
+        <div class="dashboard-main">
+          <header class="panel-top">
+            <div>
+              <p class="eyebrow">Session Active</p>
+              <h3 class="welcome">Welcome, <span id="displayName"></span></h3>
+            </div>
+            <p class="session-role" id="roleValue"></p>
+          </header>
+
+          <section class="dashboard-section" id="section-home" data-section-view="home">
+            <div class="grid">
+              <article class="tile">
+                <h3>Last Login</h3>
+                <p id="lastLoginValue"></p>
+              </article>
+              <article class="tile">
+                <h3>Assigned Role</h3>
+                <p id="homeRoleValue"></p>
+              </article>
+              <article class="tile tile-wide">
+                <h3>Operator Notes</h3>
+                <p id="notesValue"></p>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section hidden" id="section-compensation" data-section-view="compensation">
+            <div class="grid">
+              <article class="tile">
+                <h3>Base Compensation</h3>
+                <p id="compBaseValue">$78,000 / year</p>
+              </article>
+              <article class="tile">
+                <h3>Performance Bonus</h3>
+                <p id="compBonusValue">$6,500 projected</p>
+              </article>
+              <article class="tile tile-wide">
+                <h3>Compensation Notes</h3>
+                <p id="compNotesValue">Compensation details are currently in review by finance.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section hidden" id="section-maintenance" data-section-view="maintenance">
+            <div class="grid">
+              <article class="tile">
+                <h3>System Status</h3>
+                <p id="maintenanceStatusValue">Operational</p>
+              </article>
+              <article class="tile">
+                <h3>Next Service Window</h3>
+                <p id="maintenanceWindowValue">Sunday 02:00 - 03:00</p>
+              </article>
+              <article class="tile tile-wide">
+                <h3>Maintenance Notes</h3>
+                <p id="maintenanceNotesValue">No high-priority incidents reported in the last 24 hours.</p>
+              </article>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   </main>

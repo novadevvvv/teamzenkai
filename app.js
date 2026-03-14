@@ -13,9 +13,12 @@ const els = {
   password: document.getElementById("password"),
   displayName: document.getElementById("displayName"),
   roleValue: document.getElementById("roleValue"),
+  homeRoleValue: document.getElementById("homeRoleValue"),
   lastLoginValue: document.getElementById("lastLoginValue"),
   notesValue: document.getElementById("notesValue"),
   logoutButton: document.getElementById("logoutButton"),
+  navButtons: document.querySelectorAll(".nav-item"),
+  sections: document.querySelectorAll("[data-section-view]"),
 };
 
 async function loadUsers() {
@@ -48,11 +51,13 @@ function disableLogin(reason) {
 function showPanel(user) {
   els.displayName.textContent = user.displayName || user.username;
   els.roleValue.textContent = user.role || "Unknown";
+  els.homeRoleValue.textContent = user.role || "Unknown";
   els.lastLoginValue.textContent = new Date().toLocaleString();
   els.notesValue.textContent = user.notes || "No notes available.";
 
   els.loginCard.classList.add("hidden");
   els.panelCard.classList.remove("hidden");
+  setActiveSection("home");
 }
 
 function showLogin() {
@@ -60,6 +65,27 @@ function showLogin() {
   els.loginCard.classList.remove("hidden");
   els.loginForm.reset();
   setMessage("");
+}
+
+function setActiveSection(sectionName) {
+  els.navButtons.forEach((button) => {
+    const isActive = button.dataset.section === sectionName;
+    button.classList.toggle("active", isActive);
+  });
+
+  els.sections.forEach((section) => {
+    const shouldShow = section.dataset.sectionView === sectionName;
+    section.classList.toggle("hidden", !shouldShow);
+  });
+}
+
+function onSectionClick(event) {
+  const selectedSection = event.currentTarget.dataset.section;
+  if (!selectedSection) {
+    return;
+  }
+
+  setActiveSection(selectedSection);
 }
 
 function decodeBase64(base64Value) {
@@ -200,5 +226,8 @@ async function init() {
 
 els.loginForm.addEventListener("submit", onLoginSubmit);
 els.logoutButton.addEventListener("click", logout);
+els.navButtons.forEach((button) => {
+  button.addEventListener("click", onSectionClick);
+});
 
 init();
