@@ -91,14 +91,16 @@
 
               <form id="compensationForm" class="comp-form" novalidate>
                 <section class="comp-step" data-step="1">
+                  <p class="step-title">Step 1: Select Username</p>
                   <label for="compUserInput">User</label>
-                  <input id="compUserInput" name="compUserInput" type="text" placeholder="Enter username or display name" required>
+                  <input id="compUserInput" name="compUserInput" type="text" placeholder="Enter username" required>
                   <div class="step-actions">
                     <button type="button" id="compNextToType">Next</button>
                   </div>
                 </section>
 
                 <section class="comp-step hidden" data-step="2">
+                  <p class="step-title">Step 2: Select Type</p>
                   <label for="compTypeSelect">Type</label>
                   <select id="compTypeSelect" name="compTypeSelect" required>
                     <option value="">Select type</option>
@@ -112,6 +114,7 @@
                 </section>
 
                 <section class="comp-step hidden" data-step="3">
+                  <p class="step-title">Step 3: Enter Details</p>
                   <div id="compCurrencyFields" class="hidden">
                     <label for="compCurrencySelect">Currency</label>
                     <select id="compCurrencySelect" name="compCurrencySelect">
@@ -138,6 +141,20 @@
 
                   <div class="step-actions">
                     <button type="button" class="ghost-btn" id="compBackToType">Back</button>
+                    <button type="button" id="compNextToReview">Next</button>
+                  </div>
+                </section>
+
+                <section class="comp-step hidden" data-step="4">
+                  <p class="step-title">Step 4: Review and Submit</p>
+                  <div class="review-list">
+                    <p><strong>Username:</strong> <span id="reviewUsername"></span></p>
+                    <p><strong>Type:</strong> <span id="reviewType"></span></p>
+                    <p><strong>Selection:</strong> <span id="reviewSelection"></span></p>
+                    <p><strong>Amount:</strong> <span id="reviewAmount"></span></p>
+                  </div>
+                  <div class="step-actions">
+                    <button type="button" class="ghost-btn" id="compBackToDetails">Back</button>
                     <button type="submit" id="compSubmit">Submit</button>
                   </div>
                 </section>

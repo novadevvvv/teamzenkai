@@ -337,6 +337,29 @@ button:active {
   gap: 0.55rem;
 }
 
+.comp-step.hidden {
+  display: none;
+}
+
+.step-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.review-list {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.review-list p {
+  margin: 0;
+}
+
 .step-actions {
   display: flex;
   justify-content: flex-end;

@@ -39,6 +39,12 @@ const els = {
   compBackToUser: document.getElementById("compBackToUser"),
   compNextToDetails: document.getElementById("compNextToDetails"),
   compBackToType: document.getElementById("compBackToType"),
+  compNextToReview: document.getElementById("compNextToReview"),
+  compBackToDetails: document.getElementById("compBackToDetails"),
+  reviewUsername: document.getElementById("reviewUsername"),
+  reviewType: document.getElementById("reviewType"),
+  reviewSelection: document.getElementById("reviewSelection"),
+  reviewAmount: document.getElementById("reviewAmount"),
 };
 
 async function loadUsers() {
@@ -208,6 +214,48 @@ function nextToDetailsStep() {
   setCompensationMessage("");
   updateCompensationTypeFields();
   showCompensationStep(3);
+}
+
+function nextToReviewStep() {
+  const selectedType = els.compTypeSelect.value;
+
+  if (selectedType === "currency") {
+    const currency = els.compCurrencySelect.value;
+    const amount = Number(els.compCurrencyAmount.value);
+    if (!currency || !Number.isFinite(amount) || amount <= 0) {
+      setCompensationMessage("Choose a currency and enter a valid amount.");
+      return;
+    }
+  }
+
+  if (selectedType === "character") {
+    const character = els.compCharacterSelect.value;
+    const amount = Number(els.compCharacterAmount.value);
+    if (!character || !Number.isFinite(amount) || amount <= 0) {
+      setCompensationMessage("Choose a character and enter a valid amount.");
+      return;
+    }
+  }
+
+  const username = els.compUserInput.value.trim();
+  let selection = "";
+  let amountText = "";
+
+  if (selectedType === "currency") {
+    selection = els.compCurrencySelect.value;
+    amountText = String(Number(els.compCurrencyAmount.value));
+  } else {
+    selection = els.compCharacterSelect.value;
+    amountText = String(Number(els.compCharacterAmount.value));
+  }
+
+  els.reviewUsername.textContent = username;
+  els.reviewType.textContent = selectedType;
+  els.reviewSelection.textContent = selection;
+  els.reviewAmount.textContent = amountText;
+
+  setCompensationMessage("");
+  showCompensationStep(4);
 }
 
 function onCompensationSubmit(event) {
@@ -404,6 +452,8 @@ if (els.compensationForm) {
   els.compBackToUser.addEventListener("click", () => showCompensationStep(1));
   els.compNextToDetails.addEventListener("click", nextToDetailsStep);
   els.compBackToType.addEventListener("click", () => showCompensationStep(2));
+  els.compNextToReview.addEventListener("click", nextToReviewStep);
+  els.compBackToDetails.addEventListener("click", () => showCompensationStep(3));
   els.compTypeSelect.addEventListener("change", updateCompensationTypeFields);
   els.compensationForm.addEventListener("submit", onCompensationSubmit);
   updateCompensationTypeFields();
