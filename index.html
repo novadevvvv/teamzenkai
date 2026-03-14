@@ -73,20 +73,66 @@
           </section>
 
           <section class="dashboard-section hidden" id="section-compensation" data-section-view="compensation">
-            <div class="grid">
-              <article class="tile">
-                <h3>Base Compensation</h3>
-                <p id="compBaseValue">$78,000 / year</p>
-              </article>
-              <article class="tile">
-                <h3>Performance Bonus</h3>
-                <p id="compBonusValue">$6,500 projected</p>
-              </article>
-              <article class="tile tile-wide">
-                <h3>Compensation Notes</h3>
-                <p id="compNotesValue">Compensation details are currently in review by finance.</p>
-              </article>
-            </div>
+            <article class="tile tile-wide">
+              <h3>Compensation Entry</h3>
+              <p class="comp-subtext">Complete each step, then submit the compensation request.</p>
+
+              <form id="compensationForm" class="comp-form" novalidate>
+                <section class="comp-step" data-step="1">
+                  <label for="compUserInput">User</label>
+                  <input id="compUserInput" name="compUserInput" type="text" placeholder="Enter username or display name" required>
+                  <div class="step-actions">
+                    <button type="button" id="compNextToType">Next</button>
+                  </div>
+                </section>
+
+                <section class="comp-step hidden" data-step="2">
+                  <label for="compTypeSelect">Type</label>
+                  <select id="compTypeSelect" name="compTypeSelect" required>
+                    <option value="">Select type</option>
+                    <option value="currency">Currency</option>
+                    <option value="character">Character</option>
+                  </select>
+                  <div class="step-actions">
+                    <button type="button" class="ghost-btn" id="compBackToUser">Back</button>
+                    <button type="button" id="compNextToDetails">Next</button>
+                  </div>
+                </section>
+
+                <section class="comp-step hidden" data-step="3">
+                  <div id="compCurrencyFields" class="hidden">
+                    <label for="compCurrencySelect">Currency</label>
+                    <select id="compCurrencySelect" name="compCurrencySelect">
+                      <option value="">Select currency</option>
+                      <option value="zeni">Zeni</option>
+                      <option value="capsules">Capsules</option>
+                    </select>
+
+                    <label for="compCurrencyAmount">Amount</label>
+                    <input id="compCurrencyAmount" name="compCurrencyAmount" type="number" min="1" step="1" placeholder="Enter amount">
+                  </div>
+
+                  <div id="compCharacterFields" class="hidden">
+                    <label for="compCharacterSelect">Character</label>
+                    <select id="compCharacterSelect" name="compCharacterSelect">
+                      <option value="">Select character</option>
+                      <option value="character1">Character1</option>
+                      <option value="character2">Character2</option>
+                    </select>
+
+                    <label for="compCharacterAmount">Amount</label>
+                    <input id="compCharacterAmount" name="compCharacterAmount" type="number" min="1" step="1" placeholder="Enter amount">
+                  </div>
+
+                  <div class="step-actions">
+                    <button type="button" class="ghost-btn" id="compBackToType">Back</button>
+                    <button type="submit" id="compSubmit">Submit</button>
+                  </div>
+                </section>
+              </form>
+
+              <p id="compResultMessage" class="message comp-message" role="status" aria-live="polite"></p>
+            </article>
           </section>
 
           <section class="dashboard-section hidden" id="section-maintenance" data-section-view="maintenance">

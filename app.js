@@ -1,6 +1,7 @@
 const state = {
   users: [],
   activeUser: null,
+  compensationStep: 1,
 };
 
 const els = {
@@ -19,6 +20,21 @@ const els = {
   logoutButton: document.getElementById("logoutButton"),
   navButtons: document.querySelectorAll(".nav-item"),
   sections: document.querySelectorAll("[data-section-view]"),
+  compensationForm: document.getElementById("compensationForm"),
+  compSteps: document.querySelectorAll(".comp-step"),
+  compUserInput: document.getElementById("compUserInput"),
+  compTypeSelect: document.getElementById("compTypeSelect"),
+  compCurrencyFields: document.getElementById("compCurrencyFields"),
+  compCurrencySelect: document.getElementById("compCurrencySelect"),
+  compCurrencyAmount: document.getElementById("compCurrencyAmount"),
+  compCharacterFields: document.getElementById("compCharacterFields"),
+  compCharacterSelect: document.getElementById("compCharacterSelect"),
+  compCharacterAmount: document.getElementById("compCharacterAmount"),
+  compResultMessage: document.getElementById("compResultMessage"),
+  compNextToType: document.getElementById("compNextToType"),
+  compBackToUser: document.getElementById("compBackToUser"),
+  compNextToDetails: document.getElementById("compNextToDetails"),
+  compBackToType: document.getElementById("compBackToType"),
 };
 
 async function loadUsers() {
@@ -77,6 +93,10 @@ function setActiveSection(sectionName) {
     const shouldShow = section.dataset.sectionView === sectionName;
     section.classList.toggle("hidden", !shouldShow);
   });
+
+  if (sectionName === "compensation") {
+    resetCompensationWizard();
+  }
 }
 
 function onSectionClick(event) {
@@ -86,6 +106,115 @@ function onSectionClick(event) {
   }
 
   setActiveSection(selectedSection);
+}
+
+function setCompensationMessage(text, tone = "error") {
+  if (!els.compResultMessage) {
+    return;
+  }
+
+  els.compResultMessage.textContent = text;
+  els.compResultMessage.style.color = tone === "success" ? "#0f7a4e" : "#9a2f2f";
+}
+
+function updateCompensationTypeFields() {
+  const selectedType = els.compTypeSelect.value;
+  const isCurrency = selectedType === "currency";
+  const isCharacter = selectedType === "character";
+
+  els.compCurrencyFields.classList.toggle("hidden", !isCurrency);
+  els.compCharacterFields.classList.toggle("hidden", !isCharacter);
+
+  els.compCurrencySelect.required = isCurrency;
+  els.compCurrencyAmount.required = isCurrency;
+  els.compCharacterSelect.required = isCharacter;
+  els.compCharacterAmount.required = isCharacter;
+}
+
+function showCompensationStep(stepNumber) {
+  state.compensationStep = stepNumber;
+  els.compSteps.forEach((step) => {
+    const isCurrent = Number(step.dataset.step) === stepNumber;
+    step.classList.toggle("hidden", !isCurrent);
+  });
+}
+
+function resetCompensationWizard() {
+  if (!els.compensationForm) {
+    return;
+  }
+
+  els.compensationForm.reset();
+  setCompensationMessage("");
+  updateCompensationTypeFields();
+  showCompensationStep(1);
+}
+
+function nextToTypeStep() {
+  const userValue = els.compUserInput.value.trim();
+  if (!userValue) {
+    setCompensationMessage("Enter a user before continuing.");
+    return;
+  }
+
+  setCompensationMessage("");
+  showCompensationStep(2);
+}
+
+function nextToDetailsStep() {
+  const selectedType = els.compTypeSelect.value;
+  if (!selectedType) {
+    setCompensationMessage("Select type before continuing.");
+    return;
+  }
+
+  setCompensationMessage("");
+  updateCompensationTypeFields();
+  showCompensationStep(3);
+}
+
+function onCompensationSubmit(event) {
+  event.preventDefault();
+
+  const userValue = els.compUserInput.value.trim();
+  const selectedType = els.compTypeSelect.value;
+
+  if (!userValue || !selectedType) {
+    setCompensationMessage("Complete all previous steps first.");
+    return;
+  }
+
+  if (selectedType === "currency") {
+    const currency = els.compCurrencySelect.value;
+    const amount = Number(els.compCurrencyAmount.value);
+    if (!currency || !Number.isFinite(amount) || amount <= 0) {
+      setCompensationMessage("Choose a currency and enter a valid amount.");
+      return;
+    }
+
+    setCompensationMessage(
+      `Submitted: ${userValue} receives ${amount} ${currency}.`,
+      "success"
+    );
+    return;
+  }
+
+  if (selectedType === "character") {
+    const character = els.compCharacterSelect.value;
+    const amount = Number(els.compCharacterAmount.value);
+    if (!character || !Number.isFinite(amount) || amount <= 0) {
+      setCompensationMessage("Choose a character and enter a valid amount.");
+      return;
+    }
+
+    setCompensationMessage(
+      `Submitted: ${userValue} receives ${amount} of ${character}.`,
+      "success"
+    );
+    return;
+  }
+
+  setCompensationMessage("Invalid compensation type selected.");
 }
 
 function decodeBase64(base64Value) {
@@ -229,5 +358,15 @@ els.logoutButton.addEventListener("click", logout);
 els.navButtons.forEach((button) => {
   button.addEventListener("click", onSectionClick);
 });
+
+if (els.compensationForm) {
+  els.compNextToType.addEventListener("click", nextToTypeStep);
+  els.compBackToUser.addEventListener("click", () => showCompensationStep(1));
+  els.compNextToDetails.addEventListener("click", nextToDetailsStep);
+  els.compBackToType.addEventListener("click", () => showCompensationStep(2));
+  els.compTypeSelect.addEventListener("change", updateCompensationTypeFields);
+  els.compensationForm.addEventListener("submit", onCompensationSubmit);
+  updateCompensationTypeFields();
+}
 
 init();

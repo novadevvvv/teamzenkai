@@ -18,6 +18,7 @@
 html,
 body {
   margin: 0;
+  width: 100%;
   min-height: 100%;
 }
 
@@ -28,13 +29,14 @@ body {
     radial-gradient(circle at 10% 20%, rgba(31, 143, 95, 0.18) 0, transparent 40%),
     radial-gradient(circle at 80% 10%, rgba(41, 124, 180, 0.14) 0, transparent 35%),
     linear-gradient(145deg, var(--bg-a), var(--bg-b));
-  display: grid;
-  place-items: center;
-  padding: 1.2rem;
+  min-height: 100vh;
+  display: block;
+  padding: 0;
 }
 
 .shell {
-  width: min(1080px, 100%);
+  width: 100%;
+  min-height: 100vh;
   animation: rise 600ms ease-out;
 }
 
@@ -42,7 +44,7 @@ body {
   backdrop-filter: blur(10px);
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 0;
   box-shadow: var(--shadow);
   padding: clamp(1.1rem, 3vw, 2rem);
 }
@@ -58,6 +60,7 @@ body {
 .panel-card {
   padding: 0;
   overflow: hidden;
+  min-height: 100vh;
 }
 
 .eyebrow {
@@ -91,7 +94,21 @@ input {
   background: rgba(255, 255, 255, 0.95);
 }
 
+select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.72rem 0.86rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+}
+
 input:focus {
+  outline: 2px solid rgba(31, 143, 95, 0.25);
+  border-color: var(--accent);
+}
+
+select:focus {
   outline: 2px solid rgba(31, 143, 95, 0.25);
   border-color: var(--accent);
 }
@@ -246,6 +263,36 @@ button:active {
 
 .tile-wide {
   grid-column: 1 / -1;
+}
+
+.comp-subtext {
+  margin: 0.35rem 0 1rem;
+  color: var(--ink-soft);
+}
+
+.comp-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.comp-step {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 0.2rem;
+}
+
+.step-actions button {
+  margin-top: 0;
+}
+
+.comp-message {
+  margin-top: 0.9rem;
 }
 
 @keyframes rise {
