@@ -3,15 +3,16 @@
 This is a GitHub Pages-friendly static website with:
 
 - A login panel (`index.html`)
-- Credential records stored in an internal JSON file (`users.json`)
+- Credential records stored in an internal JSON file (`users.json`) using salted PBKDF2 hashes
 - A simple protected panel shown after successful login (`app.js`)
 
 ## Important Security Note
 
-Because this is a fully static site, all files are public in the browser, including `users.json`.
-This setup is suitable only for demos, prototypes, or non-sensitive internal mockups.
+Because this is a fully static site, all files are delivered to the browser, including `users.json`.
+Passwords are now stored as salted PBKDF2 hashes (not plaintext), but this is still client-side authentication.
+This setup is suitable for demos, prototypes, or low-risk internal tooling.
 
-For real authentication, use a backend service and never store passwords in a public client repo.
+For real authentication, use a backend service with server-side sessions/tokens.
 
 ## Local Preview
 
@@ -33,7 +34,12 @@ Then open <http://localhost:8080>.
 3. Set source to `Deploy from a branch` and choose your branch/root.
 4. Visit the generated Pages URL.
 
-## Default Demo Accounts
+## User Record Format
 
-- `admin` / `admin123`
-- `analyst` / `zenkai456`
+Each user should include these credential fields:
+
+- `salt` (base64)
+- `passwordHash` (base64)
+- `iterations` (number)
+
+The app verifies login by deriving a PBKDF2-SHA256 hash in the browser and comparing it to `passwordHash`.

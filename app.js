@@ -55,13 +55,68 @@ function showLogin() {
   setMessage("");
 }
 
-function findUser(username, password) {
-  return state.users.find((user) => {
-    return user.username === username && user.password === password;
-  });
+function decodeBase64(base64Value) {
+  const binary = atob(base64Value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
-function onLoginSubmit(event) {
+function toBase64(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+async function derivePasswordHash(password, saltBase64, iterations) {
+  const encoder = new TextEncoder();
+  const passwordBytes = encoder.encode(password);
+  const saltBytes = decodeBase64(saltBase64);
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passwordBytes,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltBytes,
+      iterations,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  return toBase64(new Uint8Array(bits));
+}
+
+async function verifyUserPassword(user, password) {
+  if (!user || !user.salt || !user.passwordHash || !user.iterations) {
+    return false;
+  }
+
+  const derived = await derivePasswordHash(password, user.salt, user.iterations);
+  return derived === user.passwordHash;
+}
+
+async function findUser(username, password) {
+  const user = state.users.find((entry) => entry.username === username);
+  if (!user) {
+    return null;
+  }
+
+  const isValid = await verifyUserPassword(user, password);
+  return isValid ? user : null;
+}
+
+async function onLoginSubmit(event) {
   event.preventDefault();
 
   const username = els.username.value.trim();
@@ -72,7 +127,7 @@ function onLoginSubmit(event) {
     return;
   }
 
-  const user = findUser(username, password);
+  const user = await findUser(username, password);
   if (!user) {
     setMessage("Invalid username or password.");
     return;

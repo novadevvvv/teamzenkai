@@ -2,14 +2,18 @@
   "users": [
     {
       "username": "admin",
-      "password": "admin123",
+      "salt": "8/VY1NM/I8EotD1kQm0YRg==",
+      "passwordHash": "whJ9V0oJfnYZRICOs5+JE3LTop0TLuNaEwQk0ZXUTjU=",
+      "iterations": 210000,
       "displayName": "Admin Operator",
       "role": "Administrator",
       "notes": "Full access to all controls."
     },
     {
       "username": "analyst",
-      "password": "zenkai456",
+      "salt": "vZ26YYU7TOdebiFMMYxMBw==",
+      "passwordHash": "Qkwtt/NqQj1fJbzjfWv0OEpA1EYjvxfMVhUJV4nlhZA=",
+      "iterations": 210000,
       "displayName": "Data Analyst",
       "role": "Analyst",
       "notes": "Read-only analysis tools and dashboards."
