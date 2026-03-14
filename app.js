@@ -38,6 +38,13 @@ function setMessage(text, tone = "error") {
   els.loginMessage.style.color = tone === "success" ? "#0f7a4e" : "#9a2f2f";
 }
 
+function disableLogin(reason) {
+  els.loginButton.disabled = true;
+  els.username.disabled = true;
+  els.password.disabled = true;
+  setMessage(reason);
+}
+
 function showPanel(user) {
   els.displayName.textContent = user.displayName || user.username;
   els.roleValue.textContent = user.role || "Unknown";
@@ -98,6 +105,10 @@ async function derivePasswordHash(password, saltBase64, iterations) {
 }
 
 async function verifyUserPassword(user, password) {
+  if (typeof user.password === "string") {
+    return user.password === password;
+  }
+
   if (!user || !user.salt || !user.passwordHash || !user.iterations) {
     return false;
   }
@@ -127,16 +138,20 @@ async function onLoginSubmit(event) {
     return;
   }
 
-  const user = await findUser(username, password);
-  if (!user) {
-    setMessage("Invalid username or password.");
-    return;
-  }
+  try {
+    const user = await findUser(username, password);
+    if (!user) {
+      setMessage("Invalid username or password.");
+      return;
+    }
 
-  state.activeUser = user;
-  sessionStorage.setItem("teamzenkai-auth", user.username);
-  setMessage("Login successful.", "success");
-  showPanel(user);
+    state.activeUser = user;
+    sessionStorage.setItem("teamzenkai-auth", user.username);
+    setMessage("Login successful.", "success");
+    showPanel(user);
+  } catch (error) {
+    setMessage(error.message || "Login check failed. Use HTTPS or localhost static server.");
+  }
 }
 
 function restoreSession() {
@@ -159,6 +174,16 @@ function logout() {
 }
 
 async function init() {
+  if (location.protocol === "file:") {
+    disableLogin("This page cannot authenticate from file://. Start a local server and open http://localhost.");
+    return;
+  }
+
+  if (!window.crypto || !window.crypto.subtle) {
+    disableLogin("Secure crypto is unavailable in this browser context. Use HTTPS or localhost.");
+    return;
+  }
+
   els.loginButton.disabled = true;
   setMessage("Loading account data...", "success");
   await loadUsers();

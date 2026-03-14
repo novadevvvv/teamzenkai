@@ -17,6 +17,7 @@ For real authentication, use a backend service with server-side sessions/tokens.
 ## Local Preview
 
 Open `index.html` in a static server context.
+Do not double-click and run it as `file://...`, because `fetch` and secure crypto checks will fail there.
 
 Examples:
 
