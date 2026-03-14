@@ -2,6 +2,8 @@ const state = {
   users: [],
   activeUser: null,
   compensationStep: 1,
+  maintenanceEnabled: false,
+  toastTimer: null,
 };
 
 const els = {
@@ -45,7 +47,28 @@ const els = {
   reviewType: document.getElementById("reviewType"),
   reviewSelection: document.getElementById("reviewSelection"),
   reviewAmount: document.getElementById("reviewAmount"),
+  maintenanceStatusValue: document.getElementById("maintenanceStatusValue"),
+  maintenanceToggleButton: document.getElementById("maintenanceToggleButton"),
+  toast: document.getElementById("toast"),
 };
+
+function showToast(message) {
+  if (!els.toast) {
+    return;
+  }
+
+  if (state.toastTimer) {
+    clearTimeout(state.toastTimer);
+  }
+
+  els.toast.textContent = message;
+  els.toast.classList.remove("hidden");
+
+  state.toastTimer = setTimeout(() => {
+    els.toast.classList.add("hidden");
+    state.toastTimer = null;
+  }, 2200);
+}
 
 async function loadUsers() {
   try {
@@ -281,6 +304,7 @@ function onCompensationSubmit(event) {
       `Submitted: ${userValue} receives ${amount} ${currency}.`,
       "success"
     );
+    showToast("Compensation Successful");
     return;
   }
 
@@ -296,10 +320,31 @@ function onCompensationSubmit(event) {
       `Submitted: ${userValue} receives ${amount} of ${character}.`,
       "success"
     );
+    showToast("Compensation Successful");
     return;
   }
 
   setCompensationMessage("Invalid compensation type selected.");
+}
+
+function updateMaintenanceUI() {
+  if (!els.maintenanceStatusValue || !els.maintenanceToggleButton) {
+    return;
+  }
+
+  if (state.maintenanceEnabled) {
+    els.maintenanceStatusValue.textContent = "Enabled";
+    els.maintenanceToggleButton.textContent = "Disable Maintenance";
+    return;
+  }
+
+  els.maintenanceStatusValue.textContent = "Disabled";
+  els.maintenanceToggleButton.textContent = "Enable Maintenance";
+}
+
+function toggleMaintenance() {
+  state.maintenanceEnabled = !state.maintenanceEnabled;
+  updateMaintenanceUI();
 }
 
 function decodeBase64(base64Value) {
@@ -457,6 +502,11 @@ if (els.compensationForm) {
   els.compTypeSelect.addEventListener("change", updateCompensationTypeFields);
   els.compensationForm.addEventListener("submit", onCompensationSubmit);
   updateCompensationTypeFields();
+}
+
+if (els.maintenanceToggleButton) {
+  els.maintenanceToggleButton.addEventListener("click", toggleMaintenance);
+  updateMaintenanceUI();
 }
 
 init();

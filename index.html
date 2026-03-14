@@ -55,6 +55,9 @@
             <button class="nav-item active" type="button" data-section="home">Home</button>
             <button class="nav-item" type="button" data-section="compensation">Compensation</button>
             <button class="nav-item" type="button" data-section="maintenance">Maintenance</button>
+            <button class="nav-item" type="button" data-section="bug-reports">Bug Reports</button>
+            <button class="nav-item" type="button" data-section="suggestions">Suggestions</button>
+            <button class="nav-item" type="button" data-section="applications">Applications</button>
           </nav>
         </aside>
 
@@ -165,18 +168,48 @@
           </section>
 
           <section class="dashboard-section hidden" id="section-maintenance" data-section-view="maintenance">
+            <article class="tile tile-wide maintenance-card">
+              <h3>Maintenance Mode</h3>
+              <p id="maintenanceStatusValue" class="maintenance-status">Disabled</p>
+              <button id="maintenanceToggleButton" type="button">Enable Maintenance</button>
+            </article>
+          </section>
+
+          <section class="dashboard-section hidden" id="section-bug-reports" data-section-view="bug-reports">
             <div class="grid">
-              <article class="tile">
-                <h3>System Status</h3>
-                <p id="maintenanceStatusValue">Operational</p>
-              </article>
-              <article class="tile">
-                <h3>Next Service Window</h3>
-                <p id="maintenanceWindowValue">Sunday 02:00 - 03:00</p>
-              </article>
               <article class="tile tile-wide">
-                <h3>Maintenance Notes</h3>
-                <p id="maintenanceNotesValue">No high-priority incidents reported in the last 24 hours.</p>
+                <h3>Example Bug Reports</h3>
+                <ul class="list-block">
+                  <li>Login panel does not load in file protocol mode.</li>
+                  <li>Compensation wizard should retain entered values after refresh.</li>
+                  <li>Mobile navigation wraps awkwardly on small screens.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section hidden" id="section-suggestions" data-section-view="suggestions">
+            <div class="grid">
+              <article class="tile tile-wide">
+                <h3>Example Suggestions</h3>
+                <ul class="list-block">
+                  <li>Add a progress indicator for all multi-step forms.</li>
+                  <li>Allow exporting compensation submissions to CSV.</li>
+                  <li>Add dark and light theme switching options.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section hidden" id="section-applications" data-section-view="applications">
+            <div class="grid">
+              <article class="tile tile-wide">
+                <h3>Example Applications</h3>
+                <ul class="list-block">
+                  <li>Applicant: Kai - Role: Operations Analyst - Status: Pending review</li>
+                  <li>Applicant: Mira - Role: Support Specialist - Status: Interview scheduled</li>
+                  <li>Applicant: Ren - Role: Maintenance Tech - Status: Approved</li>
+                </ul>
               </article>
             </div>
           </section>
@@ -184,6 +217,8 @@
       </div>
     </section>
   </main>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>
