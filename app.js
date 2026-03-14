@@ -17,6 +17,10 @@ const els = {
   homeRoleValue: document.getElementById("homeRoleValue"),
   lastLoginValue: document.getElementById("lastLoginValue"),
   notesValue: document.getElementById("notesValue"),
+  profileToggle: document.getElementById("profileToggle"),
+  profileMenu: document.getElementById("profileMenu"),
+  profileUsername: document.getElementById("profileUsername"),
+  profileMenuUsername: document.getElementById("profileMenuUsername"),
   logoutButton: document.getElementById("logoutButton"),
   navButtons: document.querySelectorAll(".nav-item"),
   sections: document.querySelectorAll("[data-section-view]"),
@@ -65,7 +69,9 @@ function disableLogin(reason) {
 }
 
 function showPanel(user) {
-  els.displayName.textContent = user.displayName || user.username;
+  els.displayName.textContent = user.username;
+  els.profileUsername.textContent = user.username;
+  els.profileMenuUsername.textContent = user.username;
   els.roleValue.textContent = user.role || "Unknown";
   els.homeRoleValue.textContent = user.role || "Unknown";
   els.lastLoginValue.textContent = new Date().toLocaleString();
@@ -80,7 +86,38 @@ function showLogin() {
   els.panelCard.classList.add("hidden");
   els.loginCard.classList.remove("hidden");
   els.loginForm.reset();
+  closeProfileMenu();
   setMessage("");
+}
+
+function openProfileMenu() {
+  els.profileMenu.classList.remove("hidden");
+  els.profileToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeProfileMenu() {
+  els.profileMenu.classList.add("hidden");
+  els.profileToggle.setAttribute("aria-expanded", "false");
+}
+
+function toggleProfileMenu() {
+  if (els.profileMenu.classList.contains("hidden")) {
+    openProfileMenu();
+    return;
+  }
+  closeProfileMenu();
+}
+
+function onDocumentClick(event) {
+  if (!els.profileMenu || !els.profileToggle) {
+    return;
+  }
+
+  const clickedInsideMenu = els.profileMenu.contains(event.target);
+  const clickedToggle = els.profileToggle.contains(event.target);
+  if (!clickedInsideMenu && !clickedToggle) {
+    closeProfileMenu();
+  }
 }
 
 function setActiveSection(sectionName) {
@@ -325,6 +362,7 @@ function restoreSession() {
 function logout() {
   state.activeUser = null;
   sessionStorage.removeItem("teamzenkai-auth");
+  closeProfileMenu();
   showLogin();
 }
 
@@ -355,6 +393,8 @@ async function init() {
 
 els.loginForm.addEventListener("submit", onLoginSubmit);
 els.logoutButton.addEventListener("click", logout);
+els.profileToggle.addEventListener("click", toggleProfileMenu);
+document.addEventListener("click", onDocumentClick);
 els.navButtons.forEach((button) => {
   button.addEventListener("click", onSectionClick);
 });

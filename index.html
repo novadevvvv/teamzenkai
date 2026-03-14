@@ -30,6 +30,20 @@
     </section>
 
     <section class="card panel-card hidden" id="panelCard" aria-labelledby="panelHeading">
+      <header class="topbar">
+        <div class="topbar-brand">teamzenkai</div>
+        <div class="profile-wrap">
+          <button id="profileToggle" class="profile-toggle" type="button" aria-expanded="false" aria-controls="profileMenu">
+            <span class="profile-label">Profile</span>
+            <span id="profileUsername"></span>
+          </button>
+          <div id="profileMenu" class="profile-menu hidden" role="menu">
+            <p class="profile-menu-name" id="profileMenuUsername"></p>
+            <button id="logoutButton" class="ghost-btn profile-logout" type="button">Log Out</button>
+          </div>
+        </div>
+      </header>
+
       <div class="dashboard-shell">
         <aside class="sidebar" aria-label="Dashboard Navigation">
           <div class="sidebar-header">
@@ -42,8 +56,6 @@
             <button class="nav-item" type="button" data-section="compensation">Compensation</button>
             <button class="nav-item" type="button" data-section="maintenance">Maintenance</button>
           </nav>
-
-          <button id="logoutButton" class="ghost-btn sidebar-logout">Log Out</button>
         </aside>
 
         <div class="dashboard-main">

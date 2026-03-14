@@ -61,6 +61,69 @@ body {
   padding: 0;
   overflow: hidden;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.topbar-brand {
+  font-family: "Newsreader", serif;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  letter-spacing: 0.01em;
+  color: #173126;
+}
+
+.profile-wrap {
+  position: relative;
+}
+
+.profile-toggle {
+  margin-top: 0;
+  background: rgba(16, 109, 71, 0.12);
+  border: 1px solid rgba(16, 109, 71, 0.2);
+  color: var(--accent-2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+}
+
+.profile-label {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.55rem);
+  width: min(220px, 80vw);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgba(14, 36, 28, 0.18);
+  padding: 0.7rem;
+  z-index: 20;
+}
+
+.profile-menu-name {
+  margin: 0 0 0.55rem;
+  color: var(--ink-soft);
+}
+
+.profile-logout {
+  width: 100%;
+  margin-top: 0;
 }
 
 .eyebrow {
@@ -156,7 +219,8 @@ button:active {
 .dashboard-shell {
   display: grid;
   grid-template-columns: 250px 1fr;
-  min-height: 560px;
+  min-height: calc(100vh - 70px);
+  flex: 1;
 }
 
 .sidebar {
@@ -196,13 +260,6 @@ button:active {
 .nav-item.active {
   background: rgba(240, 255, 248, 0.2);
   border-color: rgba(240, 255, 248, 0.52);
-}
-
-.sidebar-logout {
-  margin-top: auto;
-  background: rgba(240, 255, 248, 0.12);
-  border-color: rgba(240, 255, 248, 0.32);
-  color: #f0fff8;
 }
 
 .dashboard-main {
@@ -309,6 +366,7 @@ button:active {
 @media (max-width: 640px) {
   .dashboard-shell {
     grid-template-columns: 1fr;
+    min-height: calc(100vh - 70px);
   }
 
   .sidebar {
