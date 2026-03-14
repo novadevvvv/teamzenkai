@@ -176,42 +176,87 @@
           </section>
 
           <section class="dashboard-section hidden" id="section-bug-reports" data-section-view="bug-reports">
-            <div class="grid">
-              <article class="tile tile-wide">
-                <h3>Example Bug Reports</h3>
-                <ul class="list-block">
-                  <li>Login panel does not load in file protocol mode.</li>
-                  <li>Compensation wizard should retain entered values after refresh.</li>
-                  <li>Mobile navigation wraps awkwardly on small screens.</li>
-                </ul>
-              </article>
-            </div>
+            <article class="tile tile-wide">
+              <h3>Bug Reports</h3>
+              <div class="module-toolbar">
+                <input id="bugSearchInput" type="search" placeholder="Search bug reports">
+                <div class="chip-row" id="bugPriorityFilters">
+                  <button type="button" class="chip-toggle active" data-priority="all">All Priorities</button>
+                  <button type="button" class="chip-toggle" data-priority="High">High</button>
+                  <button type="button" class="chip-toggle" data-priority="Medium">Medium</button>
+                  <button type="button" class="chip-toggle" data-priority="Low">Low</button>
+                </div>
+                <div class="chip-row" id="bugAreaFilters">
+                  <button type="button" class="chip-toggle active" data-area="all">All Areas</button>
+                  <button type="button" class="chip-toggle" data-area="Auth">Auth</button>
+                  <button type="button" class="chip-toggle" data-area="Compensation">Compensation</button>
+                  <button type="button" class="chip-toggle" data-area="Navigation">Navigation</button>
+                </div>
+              </div>
+
+              <div class="module-layout">
+                <div id="bugList" class="item-list"></div>
+                <aside class="detail-panel" id="bugDetailPanel">
+                  <h4 id="bugDetailTitle">Select a bug report</h4>
+                  <p class="detail-meta" id="bugDetailMeta"></p>
+                  <p id="bugDetailDescription">Choose a report from the list to see full description and details.</p>
+                </aside>
+              </div>
+            </article>
           </section>
 
           <section class="dashboard-section hidden" id="section-suggestions" data-section-view="suggestions">
-            <div class="grid">
-              <article class="tile tile-wide">
-                <h3>Example Suggestions</h3>
-                <ul class="list-block">
-                  <li>Add a progress indicator for all multi-step forms.</li>
-                  <li>Allow exporting compensation submissions to CSV.</li>
-                  <li>Add dark and light theme switching options.</li>
-                </ul>
-              </article>
-            </div>
+            <article class="tile tile-wide">
+              <h3>Suggestions</h3>
+              <div class="module-toolbar">
+                <input id="suggestionSearchInput" type="search" placeholder="Search suggestions">
+                <div class="chip-row" id="suggestionAreaFilters">
+                  <button type="button" class="chip-toggle active" data-suggestion-area="all">All Areas</button>
+                  <button type="button" class="chip-toggle" data-suggestion-area="Lobby">Lobby</button>
+                  <button type="button" class="chip-toggle" data-suggestion-area="Game">Game</button>
+                  <button type="button" class="chip-toggle" data-suggestion-area="Character">Character</button>
+                </div>
+              </div>
+
+              <div class="module-layout">
+                <div id="suggestionList" class="item-list"></div>
+                <aside class="detail-panel" id="suggestionDetailPanel">
+                  <h4 id="suggestionDetailTitle">Select a suggestion</h4>
+                  <p class="detail-meta" id="suggestionDetailMeta"></p>
+                  <p id="suggestionDetailDescription">Choose a suggestion from the list to see full details.</p>
+                </aside>
+              </div>
+            </article>
           </section>
 
           <section class="dashboard-section hidden" id="section-applications" data-section-view="applications">
-            <div class="grid">
-              <article class="tile tile-wide">
-                <h3>Example Applications</h3>
-                <ul class="list-block">
-                  <li>Applicant: Kai - Role: Operations Analyst - Status: Pending review</li>
-                  <li>Applicant: Mira - Role: Support Specialist - Status: Interview scheduled</li>
-                  <li>Applicant: Ren - Role: Maintenance Tech - Status: Approved</li>
-                </ul>
-              </article>
-            </div>
+            <article class="tile tile-wide">
+              <h3>Applications</h3>
+              <div class="module-toolbar">
+                <input id="applicationSearchInput" type="search" placeholder="Search applications">
+                <div class="chip-row" id="applicationRoleFilters">
+                  <button type="button" class="chip-toggle active" data-role="all">All Roles</button>
+                  <button type="button" class="chip-toggle" data-role="Operations Analyst">Operations Analyst</button>
+                  <button type="button" class="chip-toggle" data-role="Support Specialist">Support Specialist</button>
+                  <button type="button" class="chip-toggle" data-role="Maintenance Tech">Maintenance Tech</button>
+                </div>
+                <div class="chip-row" id="applicationStatusFilters">
+                  <button type="button" class="chip-toggle active" data-status="all">All Statuses</button>
+                  <button type="button" class="chip-toggle" data-status="Pending Review">Pending Review</button>
+                  <button type="button" class="chip-toggle" data-status="Interview Scheduled">Interview Scheduled</button>
+                  <button type="button" class="chip-toggle" data-status="Approved">Approved</button>
+                </div>
+              </div>
+
+              <div class="module-layout">
+                <div id="applicationList" class="item-list"></div>
+                <aside class="detail-panel" id="applicationDetailPanel">
+                  <h4 id="applicationDetailTitle">Select an application</h4>
+                  <p class="detail-meta" id="applicationDetailMeta"></p>
+                  <p id="applicationDetailDescription">Choose an application from the list to see full details.</p>
+                </aside>
+              </div>
+            </article>
           </section>
         </div>
       </div>

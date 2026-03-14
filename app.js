@@ -4,7 +4,102 @@ const state = {
   compensationStep: 1,
   maintenanceEnabled: false,
   toastTimer: null,
+  activeBugId: null,
+  activeSuggestionId: null,
+  activeApplicationId: null,
+  bugFilters: {
+    search: "",
+    priority: "all",
+    area: "all",
+  },
+  suggestionFilters: {
+    search: "",
+    area: "all",
+  },
+  applicationFilters: {
+    search: "",
+    role: "all",
+    status: "all",
+  },
 };
+
+const bugReports = [
+  {
+    id: "bug-1",
+    title: "Login fails on first attempt",
+    priority: "High",
+    area: "Auth",
+    summary: "Some users must click log in twice after entering credentials.",
+    description: "On fresh sessions, the first login submit occasionally returns invalid credentials even when correct values are used. A second attempt succeeds immediately. This appears related to initialization timing between user data load and submit handling.",
+  },
+  {
+    id: "bug-2",
+    title: "Compensation review step loses chips",
+    priority: "Medium",
+    area: "Compensation",
+    summary: "Review panel does not always reflect selected option labels.",
+    description: "When rapidly changing compensation type before hitting next, the review panel can show stale selection values. Reproduced by switching from currency to character and immediately moving to review. Expected behavior is live synchronized values.",
+  },
+  {
+    id: "bug-3",
+    title: "Sidebar wraps in narrow tablet view",
+    priority: "Low",
+    area: "Navigation",
+    summary: "Navigation labels crowd between 680px and 740px width.",
+    description: "At certain viewport widths, sidebar buttons clip text or wrap awkwardly. This impacts readability but does not block interactions. Suggested fix is responsive font scaling and tighter button padding for that range.",
+  },
+];
+
+const applications = [
+  {
+    id: "app-1",
+    title: "Kai R.",
+    role: "Operations Analyst",
+    status: "Pending Review",
+    summary: "Strong spreadsheet and reporting background.",
+    description: "Kai has 3 years of operational analytics experience, focusing on process metrics and dashboard reporting. Applied for Operations Analyst and included references from two prior team leads.",
+  },
+  {
+    id: "app-2",
+    title: "Mira T.",
+    role: "Support Specialist",
+    status: "Interview Scheduled",
+    summary: "Customer support lead with escalation handling history.",
+    description: "Mira has 4 years of support experience and specializes in incident triage and communication workflows. Interview is scheduled for next Tuesday 14:00.",
+  },
+  {
+    id: "app-3",
+    title: "Ren S.",
+    role: "Maintenance Tech",
+    status: "Approved",
+    summary: "Approved after technical practical assessment.",
+    description: "Ren completed the maintenance assessment with high marks in preventive checks and emergency procedures. Start date pending onboarding confirmation.",
+  },
+];
+
+const suggestions = [
+  {
+    id: "sug-1",
+    title: "Add queue summary widget",
+    area: "Lobby",
+    summary: "Show active queue and estimated wait time in lobby header.",
+    description: "Introduce a compact widget in the lobby that displays current queue population and estimated wait time. This helps players decide whether to stay in queue or switch modes.",
+  },
+  {
+    id: "sug-2",
+    title: "Improve combo training prompts",
+    area: "Game",
+    summary: "Provide contextual hint prompts during combo practice sessions.",
+    description: "In training sessions, add optional prompts when players repeatedly drop combo sequences. The prompt should identify the missed timing window and suggest a correction.",
+  },
+  {
+    id: "sug-3",
+    title: "Character loadout presets",
+    area: "Character",
+    summary: "Allow saving and loading up to three quick build presets.",
+    description: "Users want to switch between PvP and PvE builds quickly. Add character presets with naming support and one-click apply on the character management screen.",
+  },
+];
 
 const els = {
   loginCard: document.getElementById("loginCard"),
@@ -50,7 +145,313 @@ const els = {
   maintenanceStatusValue: document.getElementById("maintenanceStatusValue"),
   maintenanceToggleButton: document.getElementById("maintenanceToggleButton"),
   toast: document.getElementById("toast"),
+  bugSearchInput: document.getElementById("bugSearchInput"),
+  bugPriorityFilters: document.getElementById("bugPriorityFilters"),
+  bugAreaFilters: document.getElementById("bugAreaFilters"),
+  bugList: document.getElementById("bugList"),
+  bugDetailTitle: document.getElementById("bugDetailTitle"),
+  bugDetailMeta: document.getElementById("bugDetailMeta"),
+  bugDetailDescription: document.getElementById("bugDetailDescription"),
+  suggestionSearchInput: document.getElementById("suggestionSearchInput"),
+  suggestionAreaFilters: document.getElementById("suggestionAreaFilters"),
+  suggestionList: document.getElementById("suggestionList"),
+  suggestionDetailTitle: document.getElementById("suggestionDetailTitle"),
+  suggestionDetailMeta: document.getElementById("suggestionDetailMeta"),
+  suggestionDetailDescription: document.getElementById("suggestionDetailDescription"),
+  applicationSearchInput: document.getElementById("applicationSearchInput"),
+  applicationRoleFilters: document.getElementById("applicationRoleFilters"),
+  applicationStatusFilters: document.getElementById("applicationStatusFilters"),
+  applicationList: document.getElementById("applicationList"),
+  applicationDetailTitle: document.getElementById("applicationDetailTitle"),
+  applicationDetailMeta: document.getElementById("applicationDetailMeta"),
+  applicationDetailDescription: document.getElementById("applicationDetailDescription"),
 };
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function setSingleChipToggle(container, key, value) {
+  const buttons = container.querySelectorAll(".chip-toggle");
+  buttons.forEach((button) => {
+    const matches = button.dataset[key] === value;
+    button.classList.toggle("active", matches);
+  });
+}
+
+function getFilteredBugReports() {
+  const searchValue = state.bugFilters.search.toLowerCase();
+  return bugReports.filter((report) => {
+    const matchesPriority = state.bugFilters.priority === "all" || report.priority === state.bugFilters.priority;
+    const matchesArea = state.bugFilters.area === "all" || report.area === state.bugFilters.area;
+    const matchesSearch = !searchValue
+      || report.title.toLowerCase().includes(searchValue)
+      || report.summary.toLowerCase().includes(searchValue)
+      || report.description.toLowerCase().includes(searchValue);
+    return matchesPriority && matchesArea && matchesSearch;
+  });
+}
+
+function renderBugDetail(report) {
+  if (!report) {
+    els.bugDetailTitle.textContent = "No matching bug reports";
+    els.bugDetailMeta.textContent = "Try adjusting search or filter toggles.";
+    els.bugDetailDescription.textContent = "";
+    return;
+  }
+
+  els.bugDetailTitle.textContent = report.title;
+  els.bugDetailMeta.textContent = `Priority: ${report.priority} | Area: ${report.area}`;
+  els.bugDetailDescription.textContent = report.description;
+}
+
+function renderBugReports() {
+  if (!els.bugList) {
+    return;
+  }
+
+  const filtered = getFilteredBugReports();
+  if (filtered.length === 0) {
+    els.bugList.innerHTML = '<div class="empty-state">No bug reports match current filters.</div>';
+    renderBugDetail(null);
+    return;
+  }
+
+  if (!filtered.some((entry) => entry.id === state.activeBugId)) {
+    state.activeBugId = filtered[0].id;
+  }
+
+  els.bugList.innerHTML = filtered
+    .map((report) => {
+      const isActive = report.id === state.activeBugId;
+      return `
+        <article class="item-card ${isActive ? "active" : ""}" data-bug-id="${escapeHtml(report.id)}">
+          <p class="item-title">${escapeHtml(report.title)}</p>
+          <div>
+            <span class="chip chip-priority-${escapeHtml(report.priority)}">${escapeHtml(report.priority)}</span>
+            <span class="chip chip-area">${escapeHtml(report.area)}</span>
+          </div>
+          <p>${escapeHtml(report.summary)}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  const active = filtered.find((entry) => entry.id === state.activeBugId) || filtered[0];
+  renderBugDetail(active);
+}
+
+function getFilteredApplications() {
+  const searchValue = state.applicationFilters.search.toLowerCase();
+  return applications.filter((application) => {
+    const matchesRole = state.applicationFilters.role === "all" || application.role === state.applicationFilters.role;
+    const matchesStatus = state.applicationFilters.status === "all" || application.status === state.applicationFilters.status;
+    const matchesSearch = !searchValue
+      || application.title.toLowerCase().includes(searchValue)
+      || application.summary.toLowerCase().includes(searchValue)
+      || application.description.toLowerCase().includes(searchValue);
+    return matchesRole && matchesStatus && matchesSearch;
+  });
+}
+
+function getFilteredSuggestions() {
+  const searchValue = state.suggestionFilters.search.toLowerCase();
+  return suggestions.filter((suggestion) => {
+    const matchesArea = state.suggestionFilters.area === "all" || suggestion.area === state.suggestionFilters.area;
+    const matchesSearch = !searchValue
+      || suggestion.title.toLowerCase().includes(searchValue)
+      || suggestion.summary.toLowerCase().includes(searchValue)
+      || suggestion.description.toLowerCase().includes(searchValue);
+    return matchesArea && matchesSearch;
+  });
+}
+
+function renderSuggestionDetail(suggestion) {
+  if (!suggestion) {
+    els.suggestionDetailTitle.textContent = "No matching suggestions";
+    els.suggestionDetailMeta.textContent = "Try adjusting search or filter toggles.";
+    els.suggestionDetailDescription.textContent = "";
+    return;
+  }
+
+  els.suggestionDetailTitle.textContent = suggestion.title;
+  els.suggestionDetailMeta.textContent = `Area: ${suggestion.area}`;
+  els.suggestionDetailDescription.textContent = suggestion.description;
+}
+
+function renderSuggestions() {
+  if (!els.suggestionList) {
+    return;
+  }
+
+  const filtered = getFilteredSuggestions();
+  if (filtered.length === 0) {
+    els.suggestionList.innerHTML = '<div class="empty-state">No suggestions match current filters.</div>';
+    renderSuggestionDetail(null);
+    return;
+  }
+
+  if (!filtered.some((entry) => entry.id === state.activeSuggestionId)) {
+    state.activeSuggestionId = filtered[0].id;
+  }
+
+  els.suggestionList.innerHTML = filtered
+    .map((suggestion) => {
+      const isActive = suggestion.id === state.activeSuggestionId;
+      return `
+        <article class="item-card ${isActive ? "active" : ""}" data-suggestion-id="${escapeHtml(suggestion.id)}">
+          <p class="item-title">${escapeHtml(suggestion.title)}</p>
+          <div>
+            <span class="chip chip-area">${escapeHtml(suggestion.area)}</span>
+          </div>
+          <p>${escapeHtml(suggestion.summary)}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  const active = filtered.find((entry) => entry.id === state.activeSuggestionId) || filtered[0];
+  renderSuggestionDetail(active);
+}
+
+function renderApplicationDetail(application) {
+  if (!application) {
+    els.applicationDetailTitle.textContent = "No matching applications";
+    els.applicationDetailMeta.textContent = "Try adjusting search or filter toggles.";
+    els.applicationDetailDescription.textContent = "";
+    return;
+  }
+
+  els.applicationDetailTitle.textContent = application.title;
+  els.applicationDetailMeta.textContent = `Role: ${application.role} | Status: ${application.status}`;
+  els.applicationDetailDescription.textContent = application.description;
+}
+
+function renderApplications() {
+  if (!els.applicationList) {
+    return;
+  }
+
+  const filtered = getFilteredApplications();
+  if (filtered.length === 0) {
+    els.applicationList.innerHTML = '<div class="empty-state">No applications match current filters.</div>';
+    renderApplicationDetail(null);
+    return;
+  }
+
+  if (!filtered.some((entry) => entry.id === state.activeApplicationId)) {
+    state.activeApplicationId = filtered[0].id;
+  }
+
+  els.applicationList.innerHTML = filtered
+    .map((application) => {
+      const isActive = application.id === state.activeApplicationId;
+      return `
+        <article class="item-card ${isActive ? "active" : ""}" data-application-id="${escapeHtml(application.id)}">
+          <p class="item-title">${escapeHtml(application.title)}</p>
+          <div>
+            <span class="chip chip-role">${escapeHtml(application.role)}</span>
+            <span class="chip chip-status">${escapeHtml(application.status)}</span>
+          </div>
+          <p>${escapeHtml(application.summary)}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  const active = filtered.find((entry) => entry.id === state.activeApplicationId) || filtered[0];
+  renderApplicationDetail(active);
+}
+
+function handleBugListClick(event) {
+  const card = event.target.closest("[data-bug-id]");
+  if (!card) {
+    return;
+  }
+
+  state.activeBugId = card.dataset.bugId;
+  renderBugReports();
+}
+
+function handleApplicationListClick(event) {
+  const card = event.target.closest("[data-application-id]");
+  if (!card) {
+    return;
+  }
+
+  state.activeApplicationId = card.dataset.applicationId;
+  renderApplications();
+}
+
+function handleSuggestionListClick(event) {
+  const card = event.target.closest("[data-suggestion-id]");
+  if (!card) {
+    return;
+  }
+
+  state.activeSuggestionId = card.dataset.suggestionId;
+  renderSuggestions();
+}
+
+function onBugPriorityFilterClick(event) {
+  const button = event.target.closest("[data-priority]");
+  if (!button) {
+    return;
+  }
+
+  state.bugFilters.priority = button.dataset.priority;
+  setSingleChipToggle(els.bugPriorityFilters, "priority", state.bugFilters.priority);
+  renderBugReports();
+}
+
+function onBugAreaFilterClick(event) {
+  const button = event.target.closest("[data-area]");
+  if (!button) {
+    return;
+  }
+
+  state.bugFilters.area = button.dataset.area;
+  setSingleChipToggle(els.bugAreaFilters, "area", state.bugFilters.area);
+  renderBugReports();
+}
+
+function onApplicationRoleFilterClick(event) {
+  const button = event.target.closest("[data-role]");
+  if (!button) {
+    return;
+  }
+
+  state.applicationFilters.role = button.dataset.role;
+  setSingleChipToggle(els.applicationRoleFilters, "role", state.applicationFilters.role);
+  renderApplications();
+}
+
+function onSuggestionAreaFilterClick(event) {
+  const button = event.target.closest("[data-suggestion-area]");
+  if (!button) {
+    return;
+  }
+
+  state.suggestionFilters.area = button.dataset.suggestionArea;
+  setSingleChipToggle(els.suggestionAreaFilters, "suggestionArea", state.suggestionFilters.area);
+  renderSuggestions();
+}
+
+function onApplicationStatusFilterClick(event) {
+  const button = event.target.closest("[data-status]");
+  if (!button) {
+    return;
+  }
+
+  state.applicationFilters.status = button.dataset.status;
+  setSingleChipToggle(els.applicationStatusFilters, "status", state.applicationFilters.status);
+  renderApplications();
+}
 
 function showToast(message) {
   if (!els.toast) {
@@ -508,5 +909,62 @@ if (els.maintenanceToggleButton) {
   els.maintenanceToggleButton.addEventListener("click", toggleMaintenance);
   updateMaintenanceUI();
 }
+
+if (els.bugSearchInput) {
+  els.bugSearchInput.addEventListener("input", (event) => {
+    state.bugFilters.search = event.target.value.trim();
+    renderBugReports();
+  });
+}
+
+if (els.bugPriorityFilters) {
+  els.bugPriorityFilters.addEventListener("click", onBugPriorityFilterClick);
+}
+
+if (els.bugAreaFilters) {
+  els.bugAreaFilters.addEventListener("click", onBugAreaFilterClick);
+}
+
+if (els.bugList) {
+  els.bugList.addEventListener("click", handleBugListClick);
+}
+
+if (els.suggestionSearchInput) {
+  els.suggestionSearchInput.addEventListener("input", (event) => {
+    state.suggestionFilters.search = event.target.value.trim();
+    renderSuggestions();
+  });
+}
+
+if (els.suggestionAreaFilters) {
+  els.suggestionAreaFilters.addEventListener("click", onSuggestionAreaFilterClick);
+}
+
+if (els.suggestionList) {
+  els.suggestionList.addEventListener("click", handleSuggestionListClick);
+}
+
+if (els.applicationSearchInput) {
+  els.applicationSearchInput.addEventListener("input", (event) => {
+    state.applicationFilters.search = event.target.value.trim();
+    renderApplications();
+  });
+}
+
+if (els.applicationRoleFilters) {
+  els.applicationRoleFilters.addEventListener("click", onApplicationRoleFilterClick);
+}
+
+if (els.applicationStatusFilters) {
+  els.applicationStatusFilters.addEventListener("click", onApplicationStatusFilterClick);
+}
+
+if (els.applicationList) {
+  els.applicationList.addEventListener("click", handleApplicationListClick);
+}
+
+renderBugReports();
+renderSuggestions();
+renderApplications();
 
 init();
