@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Zenkai Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card login-card" id="loginCard" aria-labelledby="loginHeading">
+      <p class="eyebrow">Restricted Access</p>
+      <h1 id="loginHeading">Team Zenkai Control Panel</h1>
+      <p class="subtext">Sign in with your internal account to continue.</p>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <button type="submit" id="loginButton">Log In</button>
+      </form>
+
+      <p id="loginMessage" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card panel-card hidden" id="panelCard" aria-labelledby="panelHeading">
+      <div class="panel-top">
+        <div>
+          <p class="eyebrow">Session Active</p>
+          <h2 id="panelHeading">Welcome, <span id="displayName"></span></h2>
+        </div>
+        <button id="logoutButton" class="ghost-btn">Log Out</button>
+      </div>
+
+      <div class="grid">
+        <article class="tile">
+          <h3>Role</h3>
+          <p id="roleValue"></p>
+        </article>
+        <article class="tile">
+          <h3>Last Login</h3>
+          <p id="lastLoginValue"></p>
+        </article>
+        <article class="tile tile-wide">
+          <h3>Notes</h3>
+          <p id="notesValue"></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

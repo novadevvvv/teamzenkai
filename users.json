@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "displayName": "Admin Operator",
+      "role": "Administrator",
+      "notes": "Full access to all controls."
+    },
+    {
+      "username": "analyst",
+      "password": "zenkai456",
+      "displayName": "Data Analyst",
+      "role": "Analyst",
+      "notes": "Read-only analysis tools and dashboards."
+    }
+  ]
+}
